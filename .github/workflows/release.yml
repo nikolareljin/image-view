@@ -1,0 +1,50 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          override: true
+          override-file: Cargo.toml
+
+      - name: Build the project
+        run: cargo build --release
+
+      - name: Create binaries for various platforms
+        run: |
+          mkdir -p artifacts
+          cargo build --release --target=x86_64-pc-windows-gnu
+          cp target/x86_64-pc-windows-gnu/release/image-view artifacts/image-view-windows.exe
+          cargo build --release --target=x86_64-unknown-linux-gnu
+          cp target/x86_64-unknown-linux-gnu/release/image-view artifacts/image-view-linux
+          cargo build --release --target=x86_64-unknown-linux-musl
+          cp target/x86_64-unknown-linux-musl/release/image-view artifacts/image-view-musl
+          cargo build --release --target=x86_64-unknown-linux-gnu
+          cp target/x86_64-unknown-linux-gnu/release/image-view artifacts/image-view-deb
+          cargo build --release --target=x86_64-unknown-linux-gnu
+          cp target/x86_64-unknown-linux-gnu/release/image-view artifacts/image-view-pacman
+          cargo build --release --target=x86_64-unknown-linux-gnu
+          cp target/x86_64-unknown-linux-gnu/release/image-view artifacts/image-view-yum
+          cargo build --release --target=x86_64-unknown-linux-gnu
+          cp target/x86_64-unknown-linux-gnu/release/image-view artifacts/image-view-redhat
+          cargo build --release --target=x86_64-apple-darwin
+          cp target/x86_64-apple-darwin/release/image-view artifacts/image-view-mac
+
+      - name: Upload binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: image-view-binaries
+          path: artifacts/*
