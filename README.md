@@ -3,7 +3,7 @@
 Render image from the terminal.
 
 ## Overview
-This project is a Rust application designed to provide an image viewing functionality. It includes a Docker setup for easy deployment and a GitHub Actions workflow for continuous integration and deployment.
+This Rust application allows rendering images directly in the terminal. It includes a Docker setup for easy deployment and a GitHub Actions workflow for continuous integration and deployment.
 
 Example: 
 
