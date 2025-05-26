@@ -1,8 +1,5 @@
 use image::{GenericImageView, Pixel};
 use std::env;
-// use std::fs::File;
-// use std::io::{BufReader, Read};
-// use std::path::Path;
 use terminal_size::terminal_size;
 
 // Implement class that will render an image within the available width of the terminal.
@@ -11,13 +8,6 @@ struct Screen {
     height: u32,
 }
 impl Screen {
-    // fn new() -> Self {
-    //     // Get the dimensions of the available console space
-    //     let width = 80; // Adjust this for your console width
-    //     let height = 40; // Adjust this for your console height
-    //     Screen { width, height }
-    // }
-
     // Get the dimensions of the console
     fn get_dimensions(&self) -> (u32, u32) {
         if let Some((width, height)) = terminal_size() {
@@ -107,6 +97,5 @@ fn main() {
     // Get the console width from the environment variable or set a default value
     // let console_width = 80; // Adjust this for your console width
     // Render the image
-    // renderer.render(console_width);
     renderer.render(fixed_width);
 }
