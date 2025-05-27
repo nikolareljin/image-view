@@ -44,7 +44,7 @@ jobs:
           cp target/x86_64-apple-darwin/release/image-view artifacts/image-view-mac
 
       - name: Upload binaries
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: image-view-binaries
           path: artifacts/*
