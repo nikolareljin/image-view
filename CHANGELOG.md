@@ -4,3 +4,4 @@
 
 ## 0.1.0
 - Rust script to display local image with full path: `image-view <file path>`
+- Update dependency `actions/checkout@v3`
