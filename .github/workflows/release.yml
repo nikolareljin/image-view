@@ -23,6 +23,13 @@ jobs:
           override: true
           override-file: Cargo.toml
 
+      - name: Add required Rust targets
+        run: |
+          rustup target add x86_64-pc-windows-gnu
+          rustup target add x86_64-unknown-linux-gnu
+          rustup target add x86_64-unknown-linux-musl
+          rustup target add x86_64-apple-darwin
+
       - name: Build the project
         run: cargo build --release
 
