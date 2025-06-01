@@ -47,10 +47,6 @@ jobs:
           rustup target list --installed
           echo "Available toolchains:"
           rustup toolchain list
-          echo "Available cargo profiles:"
-          cargo profile list
-          echo "Available cargo features:"
-          cargo features
 
           echo "***** Create artifacts directory..."
           mkdir -p artifacts
