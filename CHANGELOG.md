@@ -4,3 +4,4 @@
 - Update dependency `actions-rs/toolchain@v1`
 - Auto-generate executable files for different platforms when the code gets tagged.
 - Add Dockerfile, build.sh and test.sh scripts to verify building of the artifacts
+- Add Release info after tagging and release GH Action completes building artifacts

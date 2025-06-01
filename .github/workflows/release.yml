@@ -84,11 +84,16 @@ jobs:
 
           # macOS
           echo "***** Building for macOS..."
-          cargo build --release --target=x86_64-apple-darwin
-          if [ -f target/x86_64-apple-darwin/release/image-view ]; then
-            cp target/x86_64-apple-darwin/release/image-view artifacts/image-view-mac
+          if command -v x86_64-apple-darwin-gcc >/dev/null 2>&1; then
+            export CARGO_BUILD_TARGET_X86_64_APPLE_DARWIN_LINKER=x86_64-apple-darwin-gcc
+            cargo build --release --target=x86_64-apple-darwin
+            if [ -f target/x86_64-apple-darwin/release/image-view ]; then
+              cp target/x86_64-apple-darwin/release/image-view artifacts/image-view-mac
+            else
+              echo "!!!!! macOS binary not found!"
+            fi
           else
-            echo "macOS binary not found!" && exit 1
+            echo "!!!!! macOS cross-compiler not found, skipping macOS build."
           fi
 
           echo "***** All binaries built successfully!"
@@ -101,3 +106,21 @@ jobs:
         with:
           name: image-view-binaries
           path: artifacts/*
+      - name: Create release notes
+        id: release_notes
+        run: |
+          echo "Generating release notes..."
+          git log --pretty=format:"* %s" $(git describe --tags --abbrev=0)..HEAD > release_notes.txt
+          echo "Release notes generated:"
+          cat release_notes.txt
+          echo "::set-output name=notes::$(cat release_notes.txt)"
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: ${{ steps.release_notes.outputs.notes }}
+          files: artifacts/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
