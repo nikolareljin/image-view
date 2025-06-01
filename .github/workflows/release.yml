@@ -41,9 +41,22 @@ jobs:
       - name: Build and collect binaries for all platforms
         run: |
           set -e
+          echo "***** Preparing to build binaries for all platforms..."
+          echo "Current directory: $(pwd)"
+          echo "Available targets:"
+          rustup target list --installed
+          echo "Available toolchains:"
+          rustup toolchain list
+          echo "Available cargo profiles:"
+          cargo profile list
+          echo "Available cargo features:"
+          cargo features
+
+          echo "***** Create artifacts directory..."
           mkdir -p artifacts
 
           # Windows
+          echo "***** Building for Windows..."
           cargo build --release --target=x86_64-pc-windows-gnu
           if [ -f target/x86_64-pc-windows-gnu/release/image-view.exe ]; then
             cp target/x86_64-pc-windows-gnu/release/image-view.exe artifacts/image-view-windows.exe
@@ -52,6 +65,7 @@ jobs:
           fi
 
           # Linux GNU
+          echo "***** Building for Linux GNU..."
           cargo build --release --target=x86_64-unknown-linux-gnu
           if [ -f target/x86_64-unknown-linux-gnu/release/image-view ]; then
             cp target/x86_64-unknown-linux-gnu/release/image-view artifacts/image-view-linux
@@ -64,6 +78,7 @@ jobs:
           fi
 
           # Linux MUSL
+          echo "***** Building for Linux MUSL..."
           cargo build --release --target=x86_64-unknown-linux-musl
           if [ -f target/x86_64-unknown-linux-musl/release/image-view ]; then
             cp target/x86_64-unknown-linux-musl/release/image-view artifacts/image-view-musl
@@ -72,6 +87,7 @@ jobs:
           fi
 
           # macOS
+          echo "***** Building for macOS..."
           cargo build --release --target=x86_64-apple-darwin
           if [ -f target/x86_64-apple-darwin/release/image-view ]; then
             cp target/x86_64-apple-darwin/release/image-view artifacts/image-view-mac
@@ -79,6 +95,9 @@ jobs:
             echo "macOS binary not found!" && exit 1
           fi
 
+          echo "***** All binaries built successfully!"
+
+          echo "Binaries are located in the artifacts directory:"
           ls -al artifacts
 
       - name: Upload binaries
