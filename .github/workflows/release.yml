@@ -106,21 +106,24 @@ jobs:
         with:
           name: image-view-binaries
           path: artifacts/*
-      - name: Create release notes
-        id: release_notes
-        run: |
-          echo "Generating release notes..."
-          git log --pretty=format:"* %s" $(git describe --tags --abbrev=0)..HEAD > release_notes.txt
-          echo "Release notes generated:"
-          cat release_notes.txt
-          echo "::set-output name=notes::$(cat release_notes.txt)"
-      - name: Create GitHub release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          body: ${{ steps.release_notes.outputs.notes }}
-          files: artifacts/*
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_REPOSITORY: ${{ github.repository }}
+      # - name: Create release notes
+      #   id: release_notes
+      #   run: |
+      #     echo "Generating release notes..."
+      #     git log --pretty=format:"* %s" $(git describe --tags --abbrev=0)..HEAD > release_notes.txt
+      #     echo "Release notes generated:"
+      #     cat release_notes.txt
+      #     notes_content=$(cat release_notes.txt)
+      #     echo "notes<<EOF" >> $GITHUB_OUTPUT
+      #     echo "$notes_content" >> $GITHUB_OUTPUT
+      #     echo "EOF" >> $GITHUB_OUTPUT
+      # - name: Create GitHub release
+      #   uses: softprops/action-gh-release@v1
+      #   with:
+      #     tag_name: ${{ github.ref }}
+      #     release_name: Release ${{ github.ref }}
+      #     body: ${{ steps.release_notes.outputs.notes }}
+      #     files: artifacts/*
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     GITHUB_REPOSITORY: ${{ github.repository }}
