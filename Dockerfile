@@ -7,8 +7,12 @@ RUN apt-get update && apt-get install -y \
     libgtk-3-dev \
     libglib2.0-dev \
     libgdk-pixbuf2.0-dev \
-    cargo \
+    curl \
     mingw-w64
+
+# Install rustup and Rust toolchain
+RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
+ENV PATH="/root/.cargo/bin:${PATH}"
 
 WORKDIR /usr/src/app
 COPY . .
