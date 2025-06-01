@@ -15,7 +15,7 @@ fi
 
 # Run the test image
 test_image="test.jpeg"
-docker run --rm -v "$(pwd)/target/release:/app/target/release" rust-project ./target/release/rust_project ./src/${test_image}
+docker run --rm -v "$(pwd)/target/release:/app/target/release" rust-project ./target/release/image-view ./src/${test_image}
 if [ $? -ne 0 ]; then
     echo "Cargo run failed"
     exit 1
