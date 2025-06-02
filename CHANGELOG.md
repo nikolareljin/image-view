@@ -1,5 +1,5 @@
 ## 0.2.0
-- Update Wiki page with the latest parameters of the ./src/main.rs program (./image-view command when being compiled and built).
+- Update Wiki page with the latest parameters of the main program source code (./image-view executable when being compiled and built).
 
 ## 0.1.0
 - Rust script to display local image with full path: `image-view <file path>`

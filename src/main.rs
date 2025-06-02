@@ -2,7 +2,9 @@ use image::{GenericImageView, Pixel};
 use std::env;
 use terminal_size::terminal_size;
 
-// Implement class that will render an image within the available width of the terminal.
+// Helper struct to get the dimensions of the console
+// This struct will be used to get the dimensions of the console
+// and will be used to resize the image to fit the console width.
 struct Screen {
     width: u32,
     height: u32,
@@ -19,6 +21,10 @@ impl Screen {
     }
 }
 
+// Class that will render an image in the console
+// using ANSI escape codes for colors.
+// This class will take an image path as input and render the image in the console.
+// It will resize the image to fit the console width and maintain the aspect ratio.
 struct ImageRenderer {
     image: image::DynamicImage,
 }
@@ -57,12 +63,31 @@ impl ImageRenderer {
     }
 }
 
+// Function to print help message
+fn print_help(program_name: &str) {
+    println!(
+        "Usage: {} <image-path>\n\
+         Options:\n\
+         \t--help\t\tShow this help message\n\
+         \n\
+         Environment variables:\n\
+         \tCOLUMNS\t\tOverride detected terminal width\n\
+         \n\
+         Example:\n\
+         \t{} ./my_image.png",
+        program_name, program_name
+    );
+}
 
 fn main() {
     // Get the image path from command-line arguments
     let args: Vec<String> = env::args().collect();
+    if args.len() == 2 && (args[1] == "--help" || args[1] == "-h") {
+        print_help(&args[0]);
+        std::process::exit(0);
+    }
     if args.len() != 2 {
-        eprintln!("Usage: {} <image-path>", args[0]);
+        eprintln!("Usage: {} <image-path>\nTry --help for more information.", args[0]);
         std::process::exit(1);
     }
     let image_path = &args[1];
@@ -94,8 +119,6 @@ fn main() {
     // Print the dimensions of the console
     println!("Console dimensions: {}x{}", screen_width, screen_height);
 
-    // Get the console width from the environment variable or set a default value
-    // let console_width = 80; // Adjust this for your console width
     // Render the image
     renderer.render(fixed_width);
 }
