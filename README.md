@@ -26,6 +26,9 @@ Example:
 ./image-view ./test.jpeg
 ```
 
+![image](https://github.com/user-attachments/assets/1c98aaac-9ba7-44db-97f6-c2cd713ec813)
+
+
 ## Build
 
 - edit `./src/main.rs`
