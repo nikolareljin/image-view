@@ -2,9 +2,7 @@ use image::{GenericImageView, Pixel};
 use std::env;
 use terminal_size::terminal_size;
 
-// Helper struct to get the dimensions of the console
-// This struct will be used to get the dimensions of the console
-// and will be used to resize the image to fit the console width.
+// Struct to determine console dimensions and resize the image accordingly.
 struct Screen {
     width: u32,
     height: u32,
