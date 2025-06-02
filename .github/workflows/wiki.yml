@@ -27,8 +27,9 @@ jobs:
 
       - name: Clone Wiki
         run: |
-          git config --global url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "git@github.com:"
           git clone git@github.com:${{ github.repository }}.wiki.git wiki
+          cd wiki
+          git config --local url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "git@github.com:"
 
       - name: Copy CLI docs to Wiki
         run: |
