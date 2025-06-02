@@ -1,9 +1,24 @@
 # image-view
 
-Render image from the terminal.
+Render images directly in your terminal.
 
 ## Overview
-This Rust application allows rendering images directly in the terminal. It includes a Docker setup for easy deployment and a GitHub Actions workflow for continuous integration and deployment.
+
+**image-view** is a Rust-based command-line tool that enables you to display image files (such as JPEG, PNG, etc.) right in your terminal window. It leverages terminal graphics protocols (like Sixel or Kitty graphics) to render images inline, making it useful for quick previews without leaving the command line.
+
+Key features:
+- **Terminal Image Rendering:** Supports common image formats and displays them using compatible terminal graphics protocols.
+- **Cross-Platform:** Runs on Linux, macOS, and Windows (with supported terminals).
+- **Docker Support:** Includes a Dockerfile and build script for containerized usage and deployment.
+- **CI/CD Integration:** GitHub Actions workflow automates building and packaging for multiple platforms.
+
+Typical usage:
+
+```bash
+./image-view ./test.jpeg
+```
+
+This command will render `test.jpeg` directly in your terminal, provided your terminal emulator supports inline image display.
 
 Example: 
 
