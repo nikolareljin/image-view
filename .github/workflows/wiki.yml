@@ -1,0 +1,45 @@
+name: Generate Wiki from CLI
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  generate-wiki:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+
+      - name: Build project
+        run: cargo build --release
+
+      - name: Generate CLI documentation
+        run: |
+          ./target/release/image-view --help > CLI.md
+
+      - name: Clone Wiki
+        run: |
+          git clone https://github.com/${{ github.repository }}.wiki.git wiki
+
+      - name: Copy CLI docs to Wiki
+        run: |
+          mv CLI.md wiki/CLI.md
+
+      - name: Commit and push Wiki changes
+        run: |
+          cd wiki
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add CLI.md
+          git commit -m "Update CLI documentation from the --help output"
+          git push
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
