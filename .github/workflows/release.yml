@@ -8,6 +8,9 @@ on:
       - '*.*.*-rc'
       - '*.*.*-RC'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -106,24 +109,41 @@ jobs:
         with:
           name: image-view-binaries
           path: artifacts/*
-      # - name: Create release notes
-      #   id: release_notes
-      #   run: |
-      #     echo "Generating release notes..."
-      #     git log --pretty=format:"* %s" $(git describe --tags --abbrev=0)..HEAD > release_notes.txt
-      #     echo "Release notes generated:"
-      #     cat release_notes.txt
-      #     notes_content=$(cat release_notes.txt)
-      #     echo "notes<<EOF" >> $GITHUB_OUTPUT
-      #     echo "$notes_content" >> $GITHUB_OUTPUT
-      #     echo "EOF" >> $GITHUB_OUTPUT
-      # - name: Create GitHub release
-      #   uses: softprops/action-gh-release@v1
-      #   with:
-      #     tag_name: ${{ github.ref }}
-      #     release_name: Release ${{ github.ref }}
-      #     body: ${{ steps.release_notes.outputs.notes }}
-      #     files: artifacts/*
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     GITHUB_REPOSITORY: ${{ github.repository }}
+      - name: Create release notes
+        id: release_notes
+        run: |
+          echo "Generating release notes..."
+          git log --pretty=format:"* %s" $(git describe --tags --abbrev=0)..HEAD > release_notes.txt
+          echo "" >> release_notes.txt
+          echo "## Download Binaries" >> release_notes.txt
+          echo "" >> release_notes.txt
+          echo "| Platform | Binary |" >> release_notes.txt
+          echo "|----------|--------|" >> release_notes.txt
+          echo "| Windows (.exe) | [image-view-windows.exe](https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/image-view-windows.exe) |" >> release_notes.txt
+          echo "| Linux GNU | [image-view-linux](https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/image-view-linux) |" >> release_notes.txt
+          echo "| Linux MUSL | [image-view-musl](https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/image-view-musl) |" >> release_notes.txt
+          echo "| macOS | [image-view-mac](https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/image-view-mac) |" >> release_notes.txt
+          echo "| Debian (.deb) | [image-view-deb](https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/image-view-deb) |" >> release_notes.txt
+          echo "| Arch (.pacman) | [image-view-pacman](https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/image-view-pacman) |" >> release_notes.txt
+          echo "| Yum (.yum) | [image-view-yum](https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/image-view-yum) |" >> release_notes.txt
+          echo "| RedHat | [image-view-redhat](https://github.com/${{ github.repository }}/releases/download/${GITHUB_REF_NAME}/image-view-redhat) |" >> release_notes.txt
+          echo "" >> release_notes.txt
+          echo "Release notes generated:"
+          cat release_notes.txt
+          notes_content=$(cat release_notes.txt)
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "$notes_content" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        env:
+          GITHUB_REF_NAME: ${{ github.ref_name }}
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          body: ${{ steps.release_notes.outputs.notes }}
+          files: artifacts/*
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
