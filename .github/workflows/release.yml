@@ -144,6 +144,7 @@ jobs:
           release_name: Release ${{ github.ref }}
           body: ${{ steps.release_notes.outputs.notes }}
           files: artifacts/*
+          update_existing: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
