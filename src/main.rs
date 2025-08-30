@@ -77,13 +77,26 @@ impl ImageRenderer {
     fn render(&self, max_width: u32, max_height: u32) {
         let (img_width, img_height) = self.image.dimensions();
 
-        // Calculate scale factors for both axes
-        let scale_w = max_width as f32 / img_width as f32;
-        let scale_h = max_height as f32 / img_height as f32;
-        let scale = scale_w.min(scale_h).min(1.0); // Don't upscale
+        // Each pixel is rendered as two spaces ("  "), so each pixel is 2 columns wide.
+        // Therefore, the maximum number of pixels per row is max_width / 2.
+        let pixel_width = 2;
+        let available_pixels_per_row = if max_width >= pixel_width {
+            (max_width / pixel_width).max(1)
+        } else {
+            1
+        };
 
-        let new_width = (img_width as f32 * scale) as u32;
-        let new_height = (img_height as f32 * scale) as u32;
+        // Calculate scale factors for both axes
+        let scale_w = available_pixels_per_row as f32 / img_width as f32;
+        let scale_h = max_height as f32 / img_height as f32;
+
+        // Scale so that the image fits within both max_width and max_height constraints.
+        // Choose the smaller scale factor to ensure both dimensions fit.
+        let scale = scale_h.min(scale_w).min(1.0); // Don't upscale
+
+        // Ensure new_width is at least 1 to avoid zero-width images
+        let new_width = ((img_width as f32 * scale).round() as u32).max(1);
+        let new_height = ((img_height as f32 * scale).round() as u32).max(1);
 
         let resized_img = self.image.resize(new_width, new_height, image::imageops::FilterType::Nearest);
 
@@ -150,10 +163,15 @@ fn main() {
         .ok()
         .and_then(|v| v.parse::<u32>().ok())
         .unwrap_or(screen_width);
+    
+    let env_height = env::var("LINES")
+        .ok()
+        .and_then(|v| v.parse::<u32>().ok())
+        .unwrap_or(screen_height);
 
     // Final constraints
     let final_width = max_width.unwrap_or(env_width);
-    let final_height = max_height.unwrap_or(screen_height);
+    let final_height = max_height.unwrap_or(env_height);
 
     let renderer = ImageRenderer::new(image_path);
     renderer.render(final_width, final_height);
