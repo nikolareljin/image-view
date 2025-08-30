@@ -140,7 +140,7 @@ fn parse_arg(args: &[String], flag: &str) -> Option<u32> {
 // Main function
 fn main() {
     let args: Vec<String> = env::args().collect();
-    if args.len() >= 2 && (args[1] == "--help" || args[1] == "-h" && args.len() == 2) {
+    if (args.len() >= 2 && args[1] == "--help") || (args.len() == 2 && args[1] == "-h") {
         print_help(&args[0]);
         std::process::exit(0);
     }
