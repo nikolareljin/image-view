@@ -28,6 +28,22 @@ Example:
 
 ![image](https://github.com/user-attachments/assets/1c98aaac-9ba7-44db-97f6-c2cd713ec813)
 
+## Install (Cargo required)
+
+From Git (recommended):
+
+```bash
+cargo install --git https://github.com/nikolareljin/image-view --bin image-view
+```
+
+From the repository root:
+
+```bash
+cargo install --path ./image-view
+```
+
+This installs `image-view` into `~/.cargo/bin`. Ensure it is on your `PATH`.
+
 
 ## Build
 
