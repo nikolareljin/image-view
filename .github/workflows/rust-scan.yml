@@ -1,0 +1,11 @@
+name: Rust Scan
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  scan:
+    uses: nikolareljin/ci-helpers/.github/workflows/rust-scan.yml@0.2.0
