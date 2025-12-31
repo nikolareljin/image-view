@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   release:
-    uses: nikolareljin/ci-helpers/.github/workflows/rust-release.yml@0.2.0-rc
+    uses: nikolareljin/ci-helpers/.github/workflows/rust-release.yml@production
     with:
       bin_name: "image-view"
       linux_gnu_aliases: "deb,pacman,yum,redhat"

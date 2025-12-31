@@ -8,7 +8,7 @@ on:
 
 jobs:
   ci:
-    uses: nikolareljin/ci-helpers/.github/workflows/ci.yml@0.2.0-rc
+    uses: nikolareljin/ci-helpers/.github/workflows/ci.yml@production
     with:
       build_command: "cargo build --verbose"
       test_command: "cargo test --verbose"
