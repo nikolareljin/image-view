@@ -2,12 +2,24 @@
 # SCRIPT: update
 # DESCRIPTION: Sync and update git submodules, even if the repo was cloned without them.
 # USAGE: ./update
+# NOTE: If invoked via a symlink from repo root, the script uses the symlink path
+#       as the root; otherwise it resolves the repo root from scripts/.
 # PARAMETERS: None
 # EXAMPLE: ./update
 # ----------------------------------------------------
 set -euo pipefail
 
-ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# If run via a symlink from repo root, use that path; otherwise jump up from scripts/.
+if [ "$(basename "$SCRIPT_DIR")" = "scripts" ]; then
+  ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+else
+  ROOT_DIR="$SCRIPT_DIR"
+fi
+SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$ROOT_DIR/scripts/script-helpers}"
+source "$SCRIPT_HELPERS_DIR/helpers.sh"
+shlib_import help logging
+parse_common_args "$@"
 
 if ! command -v git >/dev/null 2>&1; then
   echo "Git is required to update submodules." >&2

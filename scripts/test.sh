@@ -7,6 +7,16 @@
 # ----------------------------------------------------
 set -e
 
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [ "$(basename "$SCRIPT_DIR")" = "scripts" ]; then
+  SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$SCRIPT_DIR/script-helpers}"
+else
+  SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$SCRIPT_DIR/scripts/script-helpers}"
+fi
+source "$SCRIPT_HELPERS_DIR/helpers.sh"
+shlib_import help logging
+parse_common_args "$@"
+
 # Install dependencies (uncomment if needed)
 sudo apt-get update && sudo apt-get install -y \
     build-essential \
