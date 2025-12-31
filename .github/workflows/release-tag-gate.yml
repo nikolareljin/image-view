@@ -15,32 +15,7 @@ jobs:
 
       - name: Guard release tag
         id: release_guard
-        uses: nikolareljin/ci-helpers/.github/actions/check-release-tag@0.2.0-rc
-        with:
-          release_branch: ${{ github.head_ref }}
-          fetch_tags: true
-
-      - name: Release version
-        if: ${{ steps.release_guard.outputs.version != '' }}
-        run: echo "Release version: ${{ steps.release_guard.outputs.version }}"
-name: Release Tag Gate
-
-on:
-  pull_request:
-
-jobs:
-  gate:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-          fetch-tags: true
-
-      - name: Guard release tag
-        id: release_guard
-        uses: nikolareljin/ci-helpers/.github/actions/check-release-tag@0.2.0-rc
+        uses: nikolareljin/ci-helpers/.github/actions/check-release-tag@production
         with:
           release_branch: ${{ github.head_ref }}
           fetch_tags: true
