@@ -1,5 +1,9 @@
 # image-view
 
+[![CI](https://github.com/nikolareljin/image-view/actions/workflows/rust.yml/badge.svg)](https://github.com/nikolareljin/image-view/actions/workflows/rust.yml)
+[![Release](https://github.com/nikolareljin/image-view/actions/workflows/release.yml/badge.svg)](https://github.com/nikolareljin/image-view/actions/workflows/release.yml)
+[![Rust Scan](https://github.com/nikolareljin/image-view/actions/workflows/rust-scan.yml/badge.svg)](https://github.com/nikolareljin/image-view/actions/workflows/rust-scan.yml)
+
 Render images directly in your terminal.
 
 ## Overview

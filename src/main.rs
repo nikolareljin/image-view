@@ -43,10 +43,10 @@
 //! ## Author
 //! - Dragana (as per file path)
 //!
+use colored::*;
 use image::{GenericImageView, Pixel};
 use std::env;
 use terminal_size::terminal_size;
-use colored::*;
 
 // Struct to determine console dimensions and resize the image accordingly.
 struct Screen {
@@ -98,7 +98,9 @@ impl ImageRenderer {
         let new_width = ((img_width as f32 * scale).round() as u32).max(1);
         let new_height = ((img_height as f32 * scale).round() as u32).max(1);
 
-        let resized_img = self.image.resize(new_width, new_height, image::imageops::FilterType::Nearest);
+        let resized_img =
+            self.image
+                .resize(new_width, new_height, image::imageops::FilterType::Nearest);
 
         for y in 0..resized_img.height() {
             for x in 0..resized_img.width() {
@@ -131,10 +133,9 @@ fn print_help(program_name: &str) {
 
 // Parses command line arguments
 fn parse_arg(args: &[String], flag: &str) -> Option<u32> {
-    args.iter().position(|a| a == flag).and_then(|i| {
-        args.get(i + 1)
-            .and_then(|v| v.parse::<u32>().ok())
-    })
+    args.iter()
+        .position(|a| a == flag)
+        .and_then(|i| args.get(i + 1).and_then(|v| v.parse::<u32>().ok()))
 }
 
 // Main function
@@ -145,7 +146,10 @@ fn main() {
         std::process::exit(0);
     }
     if args.len() < 2 {
-        eprintln!("Usage: {} <image-path> [options]\nTry --help for more information.", args[0]);
+        eprintln!(
+            "Usage: {} <image-path> [options]\nTry --help for more information.",
+            args[0]
+        );
         std::process::exit(1);
     }
     let image_path = &args[1];
@@ -155,7 +159,10 @@ fn main() {
     let max_height = parse_arg(&args, "-h");
 
     // Get terminal size as fallback
-    let screen = Screen { width: 80, height: 40 };
+    let screen = Screen {
+        width: 80,
+        height: 40,
+    };
     let (screen_width, screen_height) = screen.get_dimensions();
 
     // Use COLUMNS env var if set, else terminal width
@@ -163,7 +170,7 @@ fn main() {
         .ok()
         .and_then(|v| v.parse::<u32>().ok())
         .unwrap_or(screen_width);
-    
+
     let env_height = env::var("LINES")
         .ok()
         .and_then(|v| v.parse::<u32>().ok())
