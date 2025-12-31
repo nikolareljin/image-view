@@ -1,9 +1,10 @@
-#!/bin/bash
-
-# Script that builds the Rust project and tests the release.yml commands in the Github Action
-# Usage: ./build.sh
-# This will start the Dockerfile and run the build process in the Dockerfile
-# Mount the directory ./target/release in the host machine to the Docker container
+#!/usr/bin/env bash
+# SCRIPT: build.sh
+# DESCRIPTION: Build the Docker image and run the release build/test flow inside the container.
+# USAGE: ./build
+# PARAMETERS: None
+# EXAMPLE: ./build
+# ----------------------------------------------------
 docker build -t rust-project .
 
 # Run the Docker container with the mounted volume

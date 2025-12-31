@@ -1,4 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# SCRIPT: test.sh
+# DESCRIPTION: Build release binaries for multiple targets and place them in ./artifacts.
+# USAGE: ./test
+# PARAMETERS: None
+# EXAMPLE: ./test
+# ----------------------------------------------------
 set -e
 
 # Install dependencies (uncomment if needed)

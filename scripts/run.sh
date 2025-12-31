@@ -1,4 +1,10 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# SCRIPT: run.sh
+# DESCRIPTION: Build the release binary and run it against a local test image.
+# USAGE: ./run
+# PARAMETERS: None
+# EXAMPLE: ./run
+# ----------------------------------------------------
 
 test_image="test.jpeg"
 
