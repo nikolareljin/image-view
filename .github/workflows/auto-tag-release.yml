@@ -6,4 +6,4 @@ on:
 
 jobs:
   tag:
-    uses: nikolareljin/ci-helpers/.github/workflows/auto-tag-release.yml@0.2.0
+    uses: nikolareljin/ci-helpers/.github/workflows/auto-tag-release.yml@0.2.0-rc
