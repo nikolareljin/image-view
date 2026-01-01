@@ -16,7 +16,8 @@ shlib_import help logging
 parse_common_args "$@"
 
 BUILD_MACOS="${BUILD_MACOS:-0}"
-docker build --build-arg BUILD_MACOS="$BUILD_MACOS" -t rust-project .
+RUN_LINT="${RUN_LINT:-1}"
+docker build --build-arg BUILD_MACOS="$BUILD_MACOS" --build-arg RUN_LINT="$RUN_LINT" -t rust-project .
 
 # Run the Docker container with the mounted volume
 docker run --rm -v "$(pwd)/target/release:/app/target/release" rust-project

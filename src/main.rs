@@ -188,15 +188,13 @@ fn has_flag(args: &[String], flag: &str) -> bool {
 
 fn parse_gallery_path(args: &[String]) -> Option<String> {
     let pos = args.iter().position(|a| a == "-g")?;
-    if let Some(next) = args.get(pos + 1) {
-        if !next.starts_with('-') {
-            return Some(next.clone());
-        }
+    match args.get(pos + 1) {
+        Some(next) if !next.starts_with('-') => return Some(next.clone()),
+        _ => {}
     }
-    if let Some(first) = args.get(1) {
-        if !first.starts_with('-') && first != "-g" {
-            return Some(first.clone());
-        }
+    match args.get(1) {
+        Some(first) if !first.starts_with('-') && first != "-g" => return Some(first.clone()),
+        _ => {}
     }
     None
 }
@@ -238,10 +236,8 @@ fn render_gallery_image(
     let full_path = fs::canonicalize(image_path).unwrap_or_else(|_| image_path.to_path_buf());
     let footer = format!("Path: {}", full_path.display());
     let mut footer_lines = wrap_footer(&footer, max_width);
-    if let Some(status_text) = status {
-        if !status_text.is_empty() {
-            footer_lines.extend(wrap_footer(status_text, max_width));
-        }
+    if let Some(status_text) = status.filter(|text| !text.is_empty()) {
+        footer_lines.extend(wrap_footer(status_text, max_width));
     }
     let footer_rows = footer_lines.len() as u32;
     let image_height = max_height.saturating_sub(footer_rows).max(1);
@@ -287,11 +283,12 @@ fn copy_to_clipboard(text: &str, owner: &mut Option<Child>) -> Result<(), String
     if is_x11_session() && copy_with_xclip_owner(text, owner).is_ok() {
         return Ok(());
     }
-    if let Ok(mut clipboard) = arboard::Clipboard::new() {
-        if clipboard.set_text(text.to_string()).is_ok() {
-            cleanup_clipboard_owner(owner);
-            return Ok(());
-        }
+    if arboard::Clipboard::new()
+        .and_then(|mut clipboard| clipboard.set_text(text.to_string()))
+        .is_ok()
+    {
+        cleanup_clipboard_owner(owner);
+        return Ok(());
     }
     if copy_to_clipboard_command(text).is_ok() {
         cleanup_clipboard_owner(owner);
@@ -301,10 +298,11 @@ fn copy_to_clipboard(text: &str, owner: &mut Option<Child>) -> Result<(), String
 }
 
 fn is_x11_session() -> bool {
-    if let Ok(value) = env::var("XDG_SESSION_TYPE") {
-        if value.eq_ignore_ascii_case("x11") {
-            return true;
-        }
+    if env::var("XDG_SESSION_TYPE")
+        .map(|value| value.eq_ignore_ascii_case("x11"))
+        .unwrap_or(false)
+    {
+        return true;
     }
     env::var("DISPLAY").map(|v| !v.is_empty()).unwrap_or(false)
 }
@@ -411,10 +409,12 @@ fn run_gallery(input_path: &Path, max_width: u32, max_height: u32) -> Result<(),
     }
 
     let mut index = 0;
-    if input_path.is_file() {
-        if let Some(found) = images.iter().position(|p| p == input_path) {
-            index = found;
-        }
+    if let Some(found) = input_path
+        .is_file()
+        .then(|| images.iter().position(|p| p == input_path))
+        .flatten()
+    {
+        index = found;
     }
 
     let _raw = RawModeGuard::new().map_err(|e| e.to_string())?;

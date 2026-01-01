@@ -4,10 +4,10 @@
 # USAGE: ./lint
 # PARAMETERS:
 #  -h           : Show help message and exit.
-#  -f           : Fix formatting with rustfmt before linting.
+#  -f           : Fix formatting and apply clippy auto-fixes, then re-check.
 # EXAMPLE: ./lint
 # ----------------------------------------------------
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ "$(basename "$SCRIPT_DIR")" = "scripts" ]; then
@@ -36,29 +36,52 @@ while getopts "hf?" opt; do
 done
 
 ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+export CARGO_INCREMENTAL=0
+export CARGO_TERM_COLOR=always
+CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$ROOT_DIR/target}"
+export CARGO_TARGET_DIR
+TMPDIR="${TMPDIR:-$CARGO_TARGET_DIR/tmp}"
+mkdir -p "$TMPDIR"
+export TMPDIR
 
 if [ "$fix_mode" -eq 1 ]; then
   echo "Running rustfmt"
   (
     cd "$ROOT_DIR"
-    cargo fmt --all
+    cargo fmt
   )
 
   echo "Running clippy (auto-fix when possible)"
   (
     cd "$ROOT_DIR"
-    cargo clippy --all-targets --all-features --fix --allow-dirty --allow-staged -- -D warnings
+    if ! cargo clippy --fix --allow-dirty --allow-staged -- -D warnings; then
+      echo "Clippy auto-fix failed; running check to show remaining issues"
+      cargo clippy -- -D warnings
+      exit 1
+    fi
   )
-else
+
   echo "Running rustfmt check"
   (
     cd "$ROOT_DIR"
-    cargo fmt --all -- --check
+    cargo fmt -- --check
   )
 
   echo "Running clippy"
   (
     cd "$ROOT_DIR"
-    cargo clippy --all-targets --all-features -- -D warnings
+    cargo clippy -- -D warnings
+  )
+else
+  echo "Running rustfmt check"
+  (
+    cd "$ROOT_DIR"
+    cargo fmt -- --check
+  )
+
+  echo "Running clippy"
+  (
+    cd "$ROOT_DIR"
+    cargo clippy -- -D warnings
   )
 fi

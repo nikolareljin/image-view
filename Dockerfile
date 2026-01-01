@@ -15,9 +15,20 @@ RUN apt-get update && apt-get install -y \
 # Install rustup and Rust toolchain
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y
 ENV PATH="/root/.cargo/bin:${PATH}"
+ENV CARGO_INCREMENTAL=0
+ENV CARGO_TERM_COLOR=always
+RUN rustup component add rustfmt clippy
 
 WORKDIR /usr/src/app
 COPY . .
+
+# Lint (CI parity)
+ARG RUN_LINT=1
+RUN if [ "$RUN_LINT" = "1" ]; then \
+      cargo fmt -- --check && cargo clippy -- -D warnings; \
+    else \
+      echo "Skipping lint (RUN_LINT=0)"; \
+    fi
 
 # Add Rust targets
 RUN rustup target add x86_64-pc-windows-gnu
