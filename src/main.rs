@@ -43,13 +43,13 @@
 //! ## Author
 //! - Dragana (as per file path)
 //!
+use base64::Engine;
+use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use colored::*;
+use crossterm::ExecutableCommand;
 use crossterm::cursor;
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
-use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
-use base64::Engine;
 use crossterm::terminal::{self, ClearType};
-use crossterm::ExecutableCommand;
 use image::{GenericImageView, Pixel};
 use std::env;
 use std::fs;
@@ -171,8 +171,7 @@ fn print_help(program_name: &str) {
          \t{0} ./my_image.png -w 100 -h 40\n\
          \t{0} -g\n\
          \t{0} -g ./images",
-        program_name,
-        copy_hint
+        program_name, copy_hint
     );
 }
 
@@ -209,17 +208,7 @@ fn is_image_file(path: &Path) -> bool {
     };
     matches!(
         ext.as_str(),
-        "png"
-            | "jpg"
-            | "jpeg"
-            | "gif"
-            | "bmp"
-            | "tiff"
-            | "tif"
-            | "webp"
-            | "tga"
-            | "ico"
-            | "avif"
+        "png" | "jpg" | "jpeg" | "gif" | "bmp" | "tiff" | "tif" | "webp" | "tga" | "ico" | "avif"
     )
 }
 
@@ -294,7 +283,6 @@ fn wrap_footer(text: &str, columns: u32) -> Vec<String> {
     lines
 }
 
-
 fn copy_to_clipboard(text: &str, owner: &mut Option<Child>) -> Result<(), String> {
     if is_x11_session() {
         if copy_with_xclip_owner(text, owner).is_ok() {
@@ -339,7 +327,9 @@ fn copy_with_xclip_owner(text: &str, owner: &mut Option<Child>) -> Result<(), St
         .spawn()
         .map_err(|e| e.to_string())?;
     if let Some(stdin) = child.stdin.as_mut() {
-        stdin.write_all(text.as_bytes()).map_err(|e| e.to_string())?;
+        stdin
+            .write_all(text.as_bytes())
+            .map_err(|e| e.to_string())?;
     }
     let _ = child.stdin.take();
     cleanup_clipboard_owner(owner);
@@ -379,7 +369,9 @@ fn try_copy_with_command(cmd: &str, args: &[&str], text: &str) -> Result<(), Str
         .spawn()
         .map_err(|e| e.to_string())?;
     if let Some(stdin) = child.stdin.as_mut() {
-        stdin.write_all(text.as_bytes()).map_err(|e| e.to_string())?;
+        stdin
+            .write_all(text.as_bytes())
+            .map_err(|e| e.to_string())?;
     }
     let status = child.wait().map_err(|e| e.to_string())?;
     if status.success() {
@@ -409,11 +401,7 @@ fn is_wsl() -> bool {
     false
 }
 
-fn run_gallery(
-    input_path: &Path,
-    max_width: u32,
-    max_height: u32,
-) -> Result<(), String> {
+fn run_gallery(input_path: &Path, max_width: u32, max_height: u32) -> Result<(), String> {
     let dir = if input_path.is_dir() {
         input_path
     } else {
@@ -521,9 +509,7 @@ fn main() {
 
     if gallery_mode {
         let gallery_path = parse_gallery_path(&args).unwrap_or_else(|| ".".to_string());
-        if let Err(err) =
-            run_gallery(Path::new(&gallery_path), final_width, final_height)
-        {
+        if let Err(err) = run_gallery(Path::new(&gallery_path), final_width, final_height) {
             eprintln!("Gallery mode error: {}", err);
             std::process::exit(1);
         }
