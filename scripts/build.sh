@@ -15,7 +15,9 @@ source "$SCRIPT_HELPERS_DIR/helpers.sh"
 shlib_import help logging
 parse_common_args "$@"
 
-docker build -t rust-project .
+BUILD_MACOS="${BUILD_MACOS:-0}"
+RUN_LINT="${RUN_LINT:-1}"
+docker build --build-arg BUILD_MACOS="$BUILD_MACOS" --build-arg RUN_LINT="$RUN_LINT" -t rust-project .
 
 # Run the Docker container with the mounted volume
 docker run --rm -v "$(pwd)/target/release:/app/target/release" rust-project
