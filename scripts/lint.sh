@@ -43,16 +43,22 @@ if [ "$fix_mode" -eq 1 ]; then
     cd "$ROOT_DIR"
     cargo fmt --all
   )
+
+  echo "Running clippy (auto-fix when possible)"
+  (
+    cd "$ROOT_DIR"
+    cargo clippy --all-targets --all-features --fix --allow-dirty --allow-staged -- -D warnings
+  )
 else
   echo "Running rustfmt check"
   (
     cd "$ROOT_DIR"
     cargo fmt --all -- --check
   )
-fi
 
-echo "Running clippy"
-(
-  cd "$ROOT_DIR"
-  cargo clippy --all-targets --all-features -- -D warnings
-)
+  echo "Running clippy"
+  (
+    cd "$ROOT_DIR"
+    cargo clippy --all-targets --all-features -- -D warnings
+  )
+fi

@@ -284,10 +284,8 @@ fn wrap_footer(text: &str, columns: u32) -> Vec<String> {
 }
 
 fn copy_to_clipboard(text: &str, owner: &mut Option<Child>) -> Result<(), String> {
-    if is_x11_session() {
-        if copy_with_xclip_owner(text, owner).is_ok() {
-            return Ok(());
-        }
+    if is_x11_session() && copy_with_xclip_owner(text, owner).is_ok() {
+        return Ok(());
     }
     if let Ok(mut clipboard) = arboard::Clipboard::new() {
         if clipboard.set_text(text.to_string()).is_ok() {
@@ -428,8 +426,8 @@ fn run_gallery(input_path: &Path, max_width: u32, max_height: u32) -> Result<(),
             .map_err(|e| e.to_string())?;
         status = None;
 
-        match event::read().map_err(|e| e.to_string())? {
-            Event::Key(key_event) => match key_event.code {
+        if let Event::Key(key_event) = event::read().map_err(|e| e.to_string())? {
+            match key_event.code {
                 KeyCode::Char('q') => break,
                 KeyCode::Char('c') if is_copy_shortcut(&key_event) => {
                     let full_path =
@@ -450,8 +448,7 @@ fn run_gallery(input_path: &Path, max_width: u32, max_height: u32) -> Result<(),
                     index = (index + 1) % images.len();
                 }
                 _ => {}
-            },
-            _ => {}
+            }
         }
     }
     Ok(())
