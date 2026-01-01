@@ -158,6 +158,11 @@ fn print_help(program_name: &str) {
          \t-g [path]      Gallery mode (left/right to navigate, q to quit, {1} to copy)\n\
          \t--help         Show this help message\n\
          \n\
+         Gallery mode controls:\n\
+         \tLeft/Right     Previous/next image\n\
+         \t{1}            Copy full path of current image\n\
+         \tq              Quit gallery\n\
+         \n\
          Environment variables:\n\
          \tCOLUMNS        Override detected terminal width\n\
          \tLINES          Override detected terminal height\n\
