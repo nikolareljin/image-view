@@ -9,6 +9,7 @@ terminal_size = "^0.3"
 colored = "^2.0"
 crossterm = "0.27"
 arboard = "3.4"
+base64 = "0.22"
 
 [[bin]]
 name = "image-view"

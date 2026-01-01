@@ -45,7 +45,9 @@
 //!
 use colored::*;
 use crossterm::cursor;
-use crossterm::event::{self, Event, KeyCode};
+use crossterm::event::{self, Event, KeyCode, KeyModifiers};
+use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
+use base64::Engine;
 use crossterm::terminal::{self, ClearType};
 use crossterm::ExecutableCommand;
 use image::{GenericImageView, Pixel};
@@ -53,6 +55,7 @@ use std::env;
 use std::fs;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
+use std::process::{Child, Command, Stdio};
 use terminal_size::terminal_size;
 
 // Struct to determine console dimensions and resize the image accordingly.
@@ -109,13 +112,15 @@ impl ImageRenderer {
             self.image
                 .resize(new_width, new_height, image::imageops::FilterType::Nearest);
 
+        let stdout = io::stdout();
+        let mut stdout = stdout.lock();
         for y in 0..resized_img.height() {
             for x in 0..resized_img.width() {
                 let pixel = resized_img.get_pixel(x, y);
                 let image::Rgba([r, g, b, _]) = pixel.to_rgba();
-                print!("{}", "  ".on_truecolor(r, g, b));
+                let _ = write!(stdout, "{}", "  ".on_truecolor(r, g, b));
             }
-            println!("{}", "".clear());
+            let _ = write!(stdout, "\r\n");
         }
     }
 }
@@ -137,6 +142,11 @@ impl Drop for RawModeGuard {
 
 // Print help information
 fn print_help(program_name: &str) {
+    let copy_hint = if cfg!(target_os = "macos") {
+        "Cmd+C"
+    } else {
+        "Ctrl+C"
+    };
     println!(
         "Usage:\n\
          \t{0} <image-path> [options]\n\
@@ -145,7 +155,7 @@ fn print_help(program_name: &str) {
          Options:\n\
          \t-w <width>     Set max width\n\
          \t-h <height>    Set max height\n\
-         \t-g [path]      Gallery mode (left/right to navigate, q to quit, c to copy path)\n\
+         \t-g [path]      Gallery mode (left/right to navigate, q to quit, {1} to copy)\n\
          \t--help         Show this help message\n\
          \n\
          Environment variables:\n\
@@ -156,7 +166,8 @@ fn print_help(program_name: &str) {
          \t{0} ./my_image.png -w 100 -h 40\n\
          \t{0} -g\n\
          \t{0} -g ./images",
-        program_name
+        program_name,
+        copy_hint
     );
 }
 
@@ -224,39 +235,179 @@ fn render_gallery_image(
     image_path: &Path,
     max_width: u32,
     max_height: u32,
-    footer_row: u16,
-    status: &str,
+    status: Option<&str>,
 ) -> io::Result<()> {
     let mut stdout = io::stdout();
     stdout.execute(terminal::Clear(ClearType::All))?;
     stdout.execute(cursor::MoveTo(0, 0))?;
 
-    let renderer = ImageRenderer::new(&image_path.to_string_lossy());
-    renderer.render(max_width, max_height);
-
-    stdout.execute(cursor::MoveTo(0, footer_row))?;
     let full_path = fs::canonicalize(image_path).unwrap_or_else(|_| image_path.to_path_buf());
-    if status.is_empty() {
-        println!("Path: {}", full_path.display());
-    } else {
-        println!("Path: {} | {}", full_path.display(), status);
+    let footer = format!("Path: {}", full_path.display());
+    let mut footer_lines = wrap_footer(&footer, max_width);
+    if let Some(status_text) = status {
+        if !status_text.is_empty() {
+            footer_lines.extend(wrap_footer(status_text, max_width));
+        }
+    }
+    let footer_rows = footer_lines.len() as u32;
+    let image_height = max_height.saturating_sub(footer_rows).max(1);
+
+    let renderer = ImageRenderer::new(&image_path.to_string_lossy());
+    renderer.render(max_width, image_height);
+
+    let mut stdout = stdout.lock();
+    for line in footer_lines {
+        let _ = write!(stdout, "{}\r\n", line);
     }
     stdout.flush()?;
     Ok(())
 }
 
-fn copy_to_clipboard(text: &str) -> Result<(), String> {
-    match arboard::Clipboard::new() {
-        Ok(mut clipboard) => clipboard.set_text(text.to_string()).map_err(|e| e.to_string()),
-        Err(err) => Err(err.to_string()),
+fn wrap_footer(text: &str, columns: u32) -> Vec<String> {
+    if columns == 0 {
+        return vec![text.to_string()];
     }
+    let mut lines = Vec::new();
+    let mut current = String::new();
+    let mut count = 0usize;
+    let max_columns = columns as usize;
+    for ch in text.chars() {
+        if count == max_columns {
+            lines.push(current);
+            current = String::new();
+            count = 0;
+        }
+        current.push(ch);
+        count += 1;
+    }
+    if !current.is_empty() {
+        lines.push(current);
+    }
+    if lines.is_empty() {
+        lines.push(String::new());
+    }
+    lines
+}
+
+
+fn copy_to_clipboard(text: &str, owner: &mut Option<Child>) -> Result<(), String> {
+    if is_x11_session() {
+        if copy_with_xclip_owner(text, owner).is_ok() {
+            return Ok(());
+        }
+    }
+    if let Ok(mut clipboard) = arboard::Clipboard::new() {
+        if clipboard.set_text(text.to_string()).is_ok() {
+            cleanup_clipboard_owner(owner);
+            return Ok(());
+        }
+    }
+    if copy_to_clipboard_command(text).is_ok() {
+        cleanup_clipboard_owner(owner);
+        return Ok(());
+    }
+    copy_to_clipboard_osc52(text)
+}
+
+fn is_x11_session() -> bool {
+    if let Ok(value) = env::var("XDG_SESSION_TYPE") {
+        if value.eq_ignore_ascii_case("x11") {
+            return true;
+        }
+    }
+    env::var("DISPLAY").map(|v| !v.is_empty()).unwrap_or(false)
+}
+
+fn cleanup_clipboard_owner(owner: &mut Option<Child>) {
+    if let Some(mut child) = owner.take() {
+        let _ = child.kill();
+        let _ = child.wait();
+    }
+}
+
+fn copy_with_xclip_owner(text: &str, owner: &mut Option<Child>) -> Result<(), String> {
+    let mut child = Command::new("xclip")
+        .args(["-selection", "clipboard", "-i", "-loops", "100"])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    if let Some(stdin) = child.stdin.as_mut() {
+        stdin.write_all(text.as_bytes()).map_err(|e| e.to_string())?;
+    }
+    let _ = child.stdin.take();
+    cleanup_clipboard_owner(owner);
+    *owner = Some(child);
+    Ok(())
+}
+
+fn copy_to_clipboard_command(text: &str) -> Result<(), String> {
+    if is_wsl() {
+        if try_copy_with_command("clip.exe", &[], text).is_ok() {
+            return Ok(());
+        }
+        if try_copy_with_command("cmd.exe", &["/c", "clip"], text).is_ok() {
+            return Ok(());
+        }
+    }
+    let candidates: &[(&str, &[&str])] = &[
+        ("wl-copy", &[]),
+        ("xsel", &["--clipboard", "--input"]),
+        ("pbcopy", &[]),
+    ];
+
+    for (cmd, args) in candidates {
+        if try_copy_with_command(cmd, args, text).is_ok() {
+            return Ok(());
+        }
+    }
+    Err("no clipboard command available".to_string())
+}
+
+fn try_copy_with_command(cmd: &str, args: &[&str], text: &str) -> Result<(), String> {
+    let mut child = Command::new(cmd)
+        .args(args)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+        .map_err(|e| e.to_string())?;
+    if let Some(stdin) = child.stdin.as_mut() {
+        stdin.write_all(text.as_bytes()).map_err(|e| e.to_string())?;
+    }
+    let status = child.wait().map_err(|e| e.to_string())?;
+    if status.success() {
+        Ok(())
+    } else {
+        Err(format!("command {} failed", cmd))
+    }
+}
+
+fn copy_to_clipboard_osc52(text: &str) -> Result<(), String> {
+    let encoded = BASE64_STANDARD.encode(text.as_bytes());
+    let mut stdout = io::stdout();
+    stdout
+        .write_all(format!("\x1b]52;c;{}\x07", encoded).as_bytes())
+        .map_err(|e| e.to_string())?;
+    stdout.flush().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+fn is_wsl() -> bool {
+    if let Ok(value) = env::var("WSL_DISTRO_NAME") {
+        return !value.is_empty();
+    }
+    if let Ok(version) = fs::read_to_string("/proc/version") {
+        return version.to_lowercase().contains("microsoft");
+    }
+    false
 }
 
 fn run_gallery(
     input_path: &Path,
     max_width: u32,
     max_height: u32,
-    footer_row: u16,
 ) -> Result<(), String> {
     let dir = if input_path.is_dir() {
         input_path
@@ -276,21 +427,23 @@ fn run_gallery(
     }
 
     let _raw = RawModeGuard::new().map_err(|e| e.to_string())?;
-    let mut status = String::new();
+    let render_width = max_width.saturating_sub(1).max(1);
+    let mut status: Option<String> = None;
+    let mut clipboard_owner: Option<Child> = None;
     loop {
-        render_gallery_image(&images[index], max_width, max_height, footer_row, &status)
+        render_gallery_image(&images[index], render_width, max_height, status.as_deref())
             .map_err(|e| e.to_string())?;
-        status.clear();
+        status = None;
 
         match event::read().map_err(|e| e.to_string())? {
             Event::Key(key_event) => match key_event.code {
                 KeyCode::Char('q') => break,
-                KeyCode::Char('c') => {
+                KeyCode::Char('c') if is_copy_shortcut(&key_event) => {
                     let full_path =
                         fs::canonicalize(&images[index]).unwrap_or_else(|_| images[index].clone());
-                    match copy_to_clipboard(&full_path.to_string_lossy()) {
-                        Ok(()) => status = "copied".to_string(),
-                        Err(err) => status = format!("copy failed: {}", err),
+                    match copy_to_clipboard(&full_path.to_string_lossy(), &mut clipboard_owner) {
+                        Ok(()) => status = Some("Copied".to_string()),
+                        Err(err) => status = Some(format!("Copy failed: {}", err)),
                     }
                 }
                 KeyCode::Left => {
@@ -309,6 +462,14 @@ fn run_gallery(
         }
     }
     Ok(())
+}
+
+fn is_copy_shortcut(key_event: &crossterm::event::KeyEvent) -> bool {
+    if cfg!(target_os = "macos") {
+        key_event.modifiers.contains(KeyModifiers::SUPER)
+    } else {
+        key_event.modifiers.contains(KeyModifiers::CONTROL)
+    }
 }
 
 // Main function
@@ -355,10 +516,8 @@ fn main() {
 
     if gallery_mode {
         let gallery_path = parse_gallery_path(&args).unwrap_or_else(|| ".".to_string());
-        let footer_row = env_height.saturating_sub(1) as u16;
-        let image_height = final_height.saturating_sub(1).max(1);
         if let Err(err) =
-            run_gallery(Path::new(&gallery_path), final_width, image_height, footer_row)
+            run_gallery(Path::new(&gallery_path), final_width, final_height)
         {
             eprintln!("Gallery mode error: {}", err);
             std::process::exit(1);

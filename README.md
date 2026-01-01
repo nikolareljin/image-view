@@ -8,13 +8,14 @@ Render images directly in your terminal.
 
 ## Overview
 
-**image-view** is a Rust-based command-line tool that enables you to display image files (such as JPEG, PNG, etc.) right in your terminal window. It leverages terminal graphics protocols (like Sixel or Kitty graphics) to render images inline, making it useful for quick previews without leaving the command line.
+**image-view** is a Rust-based command-line tool that enables you to display image files (such as JPEG, PNG, etc.) right in your terminal window. It renders images using colored background blocks, making it useful for quick previews without leaving the command line.
 
 Key features:
-- **Terminal Image Rendering:** Supports common image formats and displays them using compatible terminal graphics protocols.
+- **Terminal Image Rendering:** Supports common image formats and displays them using colored background blocks.
 - **Cross-Platform:** Runs on Linux, macOS, and Windows (with supported terminals).
 - **Docker Support:** Includes a Dockerfile and build script for containerized usage and deployment.
 - **CI/CD Integration:** GitHub Actions workflow automates building and packaging for multiple platforms.
+- **Gallery Mode:** Browse a directory of images with left/right navigation and copy the current image path.
 
 Typical usage:
 
@@ -53,6 +54,25 @@ This installs `image-view` into `~/.cargo/bin`. Ensure it is on your `PATH`.
 
 - edit `./src/main.rs`
 - build: `cargo run ./src/test.jpeg`
+
+## Usage
+
+Render a single image:
+
+```bash
+image-view <image-path> [-w <width>] [-h <height>]
+```
+
+Gallery mode (browse a directory):
+
+```bash
+image-view -g [path]
+```
+
+Controls in gallery mode:
+- Left/Right arrows: previous/next image
+- Ctrl+C (Cmd+C on macOS): copy full path of current image (shows "Copied" under the path)
+- q: quit
 
 
 ## Project Structure

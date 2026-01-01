@@ -4,6 +4,10 @@ All notable changes to this project are documented in this file.
 This format is based on Keep a Changelog and follows Semantic Versioning.
 
 ## [Unreleased]
+### Changed
+- Fix gallery rendering alignment by using explicit CRLF line endings in raw mode.
+- Show full path beneath gallery images with dynamic height adjustment.
+- Improve clipboard handling across environments (X11 owner retention, WSL/macOS/Wayland/OSC 52 fallbacks).
 
 ## [0.2.0] - 2025-08-30
 ### Changed
