@@ -2,6 +2,8 @@
 
 FROM ubuntu:latest
 
+ARG BUILD_MACOS=0
+
 RUN apt-get update && apt-get install -y \
     build-essential \
     libgtk-3-dev \
@@ -21,7 +23,7 @@ COPY . .
 RUN rustup target add x86_64-pc-windows-gnu
 RUN rustup target add x86_64-unknown-linux-gnu
 RUN rustup target add x86_64-unknown-linux-musl
-RUN rustup target add x86_64-apple-darwin
+RUN if [ "$BUILD_MACOS" = "1" ]; then rustup target add x86_64-apple-darwin; fi
 
 # Build for native release
 RUN cargo build --release
@@ -56,12 +58,16 @@ RUN cargo build --release --target=x86_64-unknown-linux-musl && \
       echo "Linux MUSL binary not found!" && exit 1; \
     fi
 
-# macOS
-RUN cargo build --release --target=x86_64-apple-darwin && \
-    if [ -f target/x86_64-apple-darwin/release/image-view ]; then \
-      cp target/x86_64-apple-darwin/release/image-view artifacts/image-view-mac; \
+# macOS (requires Xcode SDK; opt-in)
+RUN if [ "$BUILD_MACOS" = "1" ]; then \
+      cargo build --release --target=x86_64-apple-darwin && \
+      if [ -f target/x86_64-apple-darwin/release/image-view ]; then \
+        cp target/x86_64-apple-darwin/release/image-view artifacts/image-view-mac; \
+      else \
+        echo "macOS binary not found!" && exit 1; \
+      fi; \
     else \
-      echo "macOS binary not found!" && exit 1; \
+      echo "Skipping macOS build (BUILD_MACOS=0)"; \
     fi
 
 RUN ls -al artifacts
