@@ -20,18 +20,27 @@ Key features:
 Typical usage:
 
 ```bash
-./image-view ./test.jpeg
+image-view ./test.jpeg
 ```
 
 This command will render `test.jpeg` directly in your terminal, provided your terminal emulator supports inline image display.
 
 Example: 
 
-```
-./image-view ./test.jpeg
+![image](https://github.com/user-attachments/assets/1c98aaac-9ba7-44db-97f6-c2cd713ec813)
+
+Gallery Mode:
+
+```bash
+image-view -g ~/Pictures
 ```
 
-![image](https://github.com/user-attachments/assets/1c98aaac-9ba7-44db-97f6-c2cd713ec813)
+Allows browsing through the images in the given directory (`~/Pictures`) with pressed Arrow Left/Right keys
+
+Grab a full path of the displayed image (if you need to paste it elsewhere) - with `Ctrl+c` / `Cmd+C`.
+
+Exit the gallery mode: press `q` .
+
 
 ## Install (Cargo required)
 
