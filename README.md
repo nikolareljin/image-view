@@ -17,6 +17,14 @@ Key features:
 - **CI/CD Integration:** GitHub Actions workflow automates building and packaging for multiple platforms.
 - **Gallery Mode:** Browse a directory of images with left/right navigation and copy the current image path.
 
+## Why It’s Useful
+
+When you are working on a remote server or running long terminal workflows, opening a GUI image viewer is often not an option. **image-view** lets you see images inline, make quick visual decisions, and keep moving.
+
+Common scenarios:
+- **Server browsing:** Preview a directory of images in the terminal, find the one you want, and copy its full path from Gallery mode for use in scripts or logs.
+- **Project cues:** Show project logos in the terminal while running batch tasks so you can visually confirm which project is being processed.
+
 Typical usage:
 
 ```bash
