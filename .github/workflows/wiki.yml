@@ -2,7 +2,7 @@ name: Generate Wiki from CLI
 
 on:
   push:
-    branches: [ master ]
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:

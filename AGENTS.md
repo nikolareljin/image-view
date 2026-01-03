@@ -34,6 +34,11 @@ Run these from `image-view/` unless noted.
 - Release branches follow `release/X.Y.Z`, and the merge to master should be tagged `X.Y.Z`.
 - Ensure the tag `X.Y.Z` matches the `Cargo.toml` version at release time.
 
+## Release Versioning
+- Keep `Cargo.toml` `version` aligned with the latest release tag `X.Y.Z`.
+- Release branches follow `release/X.Y.Z`, and the merge to main should be tagged `X.Y.Z`.
+- Ensure the tag `X.Y.Z` matches the `Cargo.toml` version at release time.
+
 ## Configuration & Deployment Notes
 - Docker builds use `image-view/Dockerfile`; the helper script runs and removes containers/images, so don’t point it at production tags.
 - If you add config files, document defaults in `image-view/README.md`.
