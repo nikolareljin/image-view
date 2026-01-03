@@ -5,7 +5,7 @@
 //! ## Features
 //! - Detects terminal size automatically (with optional override via `COLUMNS` environment variable).
 //! - Resizes images to fit within the terminal window or user-specified dimensions.
-//! - Renders images using colored blocks for a visual representation in the console.
+//! - Renders images using colored blocks or ASCII art in the console.
 //!
 //! ## Usage
 //!
@@ -16,6 +16,8 @@
 //! ### Options
 //! - `-w <width>`: Set the maximum width for the rendered image.
 //! - `-h <height>`: Set the maximum height for the rendered image.
+//! - `-a`: Render ASCII art in grayscale.
+//! - `-c`: Render ASCII art with color.
 //! - `--help`: Show help message.
 //!
 //! ### Environment Variables
@@ -76,6 +78,13 @@ impl Screen {
 struct ImageRenderer {
     image: image::DynamicImage,
 }
+
+#[derive(Copy, Clone)]
+enum RenderMode {
+    Blocks,
+    Ascii,
+    AsciiColor,
+}
 // Implementation for the ImageRenderer
 impl ImageRenderer {
     fn new(image_path: &str) -> Self {
@@ -84,17 +93,17 @@ impl ImageRenderer {
     }
 
     // Renders the image to the terminal
-    fn render(&self, max_width: u32, max_height: u32) {
+    fn render(&self, max_width: u32, max_height: u32, mode: RenderMode) {
         let (img_width, img_height) = self.image.dimensions();
 
-        // Each pixel is rendered as two spaces ("  "), so each pixel is 2 columns wide.
-        // Therefore, the maximum number of pixels per row is max_width / 2.
-        let pixel_width = 2;
-        let available_pixels_per_row = if max_width >= pixel_width {
-            (max_width / pixel_width).max(1)
-        } else {
-            1
+        let columns_per_pixel = match mode {
+            RenderMode::Blocks => 2.0,
+            RenderMode::Ascii | RenderMode::AsciiColor => 2.0,
         };
+        // Use two monospace characters per pixel for ASCII to match block width.
+        let available_pixels_per_row = ((max_width as f32) / columns_per_pixel)
+            .floor()
+            .max(1.0) as u32;
 
         // Calculate scale factors for both axes
         let scale_w = available_pixels_per_row as f32 / img_width as f32;
@@ -118,7 +127,20 @@ impl ImageRenderer {
             for x in 0..resized_img.width() {
                 let pixel = resized_img.get_pixel(x, y);
                 let image::Rgba([r, g, b, _]) = pixel.to_rgba();
-                let _ = write!(stdout, "{}", "  ".on_truecolor(r, g, b));
+                match mode {
+                    RenderMode::Blocks => {
+                        let _ = write!(stdout, "{}", "  ".on_truecolor(r, g, b));
+                    }
+                    RenderMode::Ascii => {
+                        let shade = ascii_shade(r, g, b);
+                        let _ = write!(stdout, "{}{}", shade, shade);
+                    }
+                    RenderMode::AsciiColor => {
+                        let shade = ascii_shade(r, g, b);
+                        let colored = shade.to_string().truecolor(r, g, b);
+                        let _ = write!(stdout, "{}{}", colored, colored);
+                    }
+                }
             }
             let _ = write!(stdout, "\r\n");
         }
@@ -140,6 +162,20 @@ impl Drop for RawModeGuard {
     }
 }
 
+const ASCII_GRADIENT: &[u8] = b"@%#*+=-:. ";
+
+fn ascii_shade(r: u8, g: u8, b: u8) -> char {
+    let luminance =
+        (0.2126 * r as f32) + (0.7152 * g as f32) + (0.0722 * b as f32);
+    let scale = luminance / 255.0;
+    let index = (scale * (ASCII_GRADIENT.len() as f32 - 1.0)).round() as usize;
+    ASCII_GRADIENT
+        .get(index)
+        .copied()
+        .unwrap_or(b' ')
+        as char
+}
+
 // Print help information
 fn print_help(program_name: &str) {
     let copy_hint = if cfg!(target_os = "macos") {
@@ -155,6 +191,8 @@ fn print_help(program_name: &str) {
          Options:\n\
          \t-w <width>     Set max width\n\
          \t-h <height>    Set max height\n\
+         \t-a             Render ASCII art (grayscale)\n\
+         \t-c             Render ASCII art with color\n\
          \t-g [path]      Gallery mode (left/right to navigate, q to quit, {1} to copy)\n\
          \t--help         Show this help message\n\
          \n\
@@ -227,6 +265,7 @@ fn render_gallery_image(
     image_path: &Path,
     max_width: u32,
     max_height: u32,
+    mode: RenderMode,
     status: Option<&str>,
 ) -> io::Result<()> {
     let mut stdout = io::stdout();
@@ -243,7 +282,7 @@ fn render_gallery_image(
     let image_height = max_height.saturating_sub(footer_rows).max(1);
 
     let renderer = ImageRenderer::new(&image_path.to_string_lossy());
-    renderer.render(max_width, image_height);
+    renderer.render(max_width, image_height, mode);
 
     let mut stdout = stdout.lock();
     for line in footer_lines {
@@ -397,7 +436,12 @@ fn is_wsl() -> bool {
     false
 }
 
-fn run_gallery(input_path: &Path, max_width: u32, max_height: u32) -> Result<(), String> {
+fn run_gallery(
+    input_path: &Path,
+    max_width: u32,
+    max_height: u32,
+    mode: RenderMode,
+) -> Result<(), String> {
     let dir = if input_path.is_dir() {
         input_path
     } else {
@@ -422,7 +466,13 @@ fn run_gallery(input_path: &Path, max_width: u32, max_height: u32) -> Result<(),
     let mut status: Option<String> = None;
     let mut clipboard_owner: Option<Child> = None;
     loop {
-        render_gallery_image(&images[index], render_width, max_height, status.as_deref())
+        render_gallery_image(
+            &images[index],
+            render_width,
+            max_height,
+            mode,
+            status.as_deref(),
+        )
             .map_err(|e| e.to_string())?;
         status = None;
 
@@ -470,6 +520,15 @@ fn main() {
         std::process::exit(0);
     }
     let gallery_mode = has_flag(&args, "-g");
+    let ascii_mode = has_flag(&args, "-a");
+    let ascii_color_mode = has_flag(&args, "-c");
+    let render_mode = if ascii_color_mode {
+        RenderMode::AsciiColor
+    } else if ascii_mode {
+        RenderMode::Ascii
+    } else {
+        RenderMode::Blocks
+    };
     if !gallery_mode && args.len() < 2 {
         eprintln!(
             "Usage: {} <image-path> [options]\nTry --help for more information.",
@@ -506,13 +565,15 @@ fn main() {
 
     if gallery_mode {
         let gallery_path = parse_gallery_path(&args).unwrap_or_else(|| ".".to_string());
-        if let Err(err) = run_gallery(Path::new(&gallery_path), final_width, final_height) {
+        if let Err(err) =
+            run_gallery(Path::new(&gallery_path), final_width, final_height, render_mode)
+        {
             eprintln!("Gallery mode error: {}", err);
             std::process::exit(1);
         }
     } else {
         let image_path = &args[1];
         let renderer = ImageRenderer::new(image_path);
-        renderer.render(final_width, final_height);
+        renderer.render(final_width, final_height, render_mode);
     }
 }

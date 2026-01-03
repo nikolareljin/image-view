@@ -16,7 +16,7 @@ Run these from `image-view/` unless noted.
 - `./build.sh <image_name> <tag>`: build the release binary, build a Docker image, run it, then clean up (requires Docker).
 
 ## Coding Style & Naming Conventions
-- Rust 2021 edition; use standard Rust formatting (4-space indent, rustfmt-compatible style).
+- Rust 2024 edition; use standard Rust formatting (4-space indent, rustfmt-compatible style).
 - Naming: `snake_case` for functions/vars, `UpperCamelCase` for types, `SCREAMING_SNAKE_CASE` for constants.
 - Keep modules small and focused; prefer explicit error messages for CLI output.
 
@@ -29,6 +29,10 @@ Run these from `image-view/` unless noted.
 - Git history only shows an “Initial commit”; no strict convention is established yet.
 - Use concise, imperative commit subjects (e.g., "Add PNG decoding"), one topic per commit.
 - PRs should include: a short summary, how to run/verify, and sample CLI output or screenshots if behavior changes.
+## Release Versioning
+- Keep `Cargo.toml` `version` aligned with the latest release tag `X.Y.Z`.
+- Release branches follow `release/X.Y.Z`, and the merge to master should be tagged `X.Y.Z`.
+- Ensure the tag `X.Y.Z` matches the `Cargo.toml` version at release time.
 
 ## Configuration & Deployment Notes
 - Docker builds use `image-view/Dockerfile`; the helper script runs and removes containers/images, so don’t point it at production tags.

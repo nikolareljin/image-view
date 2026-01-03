@@ -77,7 +77,7 @@ This installs `image-view` into `~/.cargo/bin`. Ensure it is on your `PATH`.
 Render a single image:
 
 ```bash
-image-view <image-path> [-w <width>] [-h <height>]
+image-view <image-path> [-w <width>] [-h <height>] [-a | -c]
 ```
 
 Gallery mode (browse a directory):
@@ -90,6 +90,11 @@ Controls in gallery mode:
 - Left/Right arrows: previous/next image
 - Ctrl+C (Cmd+C on macOS): copy full path of current image (shows "Copied" under the path)
 - q: quit
+
+ASCII modes:
+- `-a`: grayscale ASCII art
+- `-c`: colorized ASCII art
+- ASCII rendering uses doubled monospace characters to preserve horizontal aspect ratio.
 
 
 ## Project Structure
