@@ -30,6 +30,11 @@ Run these from `image-view/` unless noted.
 - Use concise, imperative commit subjects (e.g., "Add PNG decoding"), one topic per commit.
 - PRs should include: a short summary, how to run/verify, and sample CLI output or screenshots if behavior changes.
 
+## Release Versioning
+- Keep `Cargo.toml` `version` aligned with the latest release tag `X.Y.Z`.
+- Release branches follow `release/X.Y.Z`, and the merge to main should be tagged `X.Y.Z`.
+- Ensure the tag `X.Y.Z` matches the `Cargo.toml` version at release time.
+
 ## Configuration & Deployment Notes
 - Docker builds use `image-view/Dockerfile`; the helper script runs and removes containers/images, so don’t point it at production tags.
 - If you add config files, document defaults in `image-view/README.md`.
