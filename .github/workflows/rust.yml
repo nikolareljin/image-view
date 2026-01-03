@@ -8,7 +8,6 @@ on:
 
 jobs:
   ci:
-    uses: nikolareljin/ci-helpers/.github/workflows/ci.yml@production
+    uses: nikolareljin/ci-helpers/.github/workflows/rust.yml@production
     with:
-      build_command: "cargo build --verbose"
-      test_command: "cargo test --verbose"
+      rust_toolchain: "stable"

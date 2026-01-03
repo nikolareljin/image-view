@@ -1,1 +1,23 @@
 /target
+**/*.rs.bk
+
+# VSCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# IntelliJ
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# CI artifacts
+coverage/
+coverage.*
+lcov.info
+junit.xml
+test-results/
