@@ -43,7 +43,7 @@
 //! - Does not upscale images beyond their original size.
 //!
 //! ## Author
-//! - Dragana (as per file path)
+//! - Nik
 //!
 use base64::Engine;
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
