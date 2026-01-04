@@ -45,13 +45,13 @@
 //! ## Author
 //! - Nik
 //!
-use base64::Engine;
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
+use base64::Engine;
 use colored::*;
-use crossterm::ExecutableCommand;
 use crossterm::cursor;
 use crossterm::event::{self, Event, KeyCode, KeyModifiers};
 use crossterm::terminal::{self, ClearType};
+use crossterm::ExecutableCommand;
 use image::{GenericImageView, Pixel};
 use std::env;
 use std::fs;
