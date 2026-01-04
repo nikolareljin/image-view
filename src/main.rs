@@ -101,9 +101,8 @@ impl ImageRenderer {
             RenderMode::Ascii | RenderMode::AsciiColor => 2.0,
         };
         // Use two monospace characters per pixel for ASCII to match block width.
-        let available_pixels_per_row = ((max_width as f32) / columns_per_pixel)
-            .floor()
-            .max(1.0) as u32;
+        let available_pixels_per_row =
+            ((max_width as f32) / columns_per_pixel).floor().max(1.0) as u32;
 
         // Calculate scale factors for both axes
         let scale_w = available_pixels_per_row as f32 / img_width as f32;
@@ -165,15 +164,10 @@ impl Drop for RawModeGuard {
 const ASCII_GRADIENT: &[u8] = b"@%#*+=-:. ";
 
 fn ascii_shade(r: u8, g: u8, b: u8) -> char {
-    let luminance =
-        (0.2126 * r as f32) + (0.7152 * g as f32) + (0.0722 * b as f32);
+    let luminance = (0.2126 * r as f32) + (0.7152 * g as f32) + (0.0722 * b as f32);
     let scale = luminance / 255.0;
     let index = (scale * (ASCII_GRADIENT.len() as f32 - 1.0)).round() as usize;
-    ASCII_GRADIENT
-        .get(index)
-        .copied()
-        .unwrap_or(b' ')
-        as char
+    ASCII_GRADIENT.get(index).copied().unwrap_or(b' ') as char
 }
 
 // Print help information
@@ -473,7 +467,7 @@ fn run_gallery(
             mode,
             status.as_deref(),
         )
-            .map_err(|e| e.to_string())?;
+        .map_err(|e| e.to_string())?;
         status = None;
 
         if let Event::Key(key_event) = event::read().map_err(|e| e.to_string())? {
@@ -565,9 +559,12 @@ fn main() {
 
     if gallery_mode {
         let gallery_path = parse_gallery_path(&args).unwrap_or_else(|| ".".to_string());
-        if let Err(err) =
-            run_gallery(Path::new(&gallery_path), final_width, final_height, render_mode)
-        {
+        if let Err(err) = run_gallery(
+            Path::new(&gallery_path),
+            final_width,
+            final_height,
+            render_mode,
+        ) {
             eprintln!("Gallery mode error: {}", err);
             std::process::exit(1);
         }
