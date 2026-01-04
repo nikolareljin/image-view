@@ -96,6 +96,25 @@ ASCII modes:
 - `-c`: colorized ASCII art
 - ASCII rendering uses doubled monospace characters to preserve horizontal aspect ratio.
 
+### ASCII-art display
+
+ASCII-art (grayscale) mode:
+
+```bash
+image-view ./src/test.jpeg -a
+```
+
+<img width="1530" height="931" alt="image" src="https://github.com/user-attachments/assets/ef732829-fe61-4bba-8201-93ab11731352" />
+
+
+ASCII-art in color mode: 
+
+```bash
+image-view ./src/test.jpeg -c
+```
+
+<img width="1530" height="931" alt="image" src="https://github.com/user-attachments/assets/7c7c9626-1d1c-4afd-8918-40d37f5daedd" />
+
 
 ## Project Structure
 - **.github/workflows/release.yml**: Defines the GitHub Actions workflow for building the project and creating binaries for various platforms.
