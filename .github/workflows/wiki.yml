@@ -8,6 +8,10 @@ on:
 jobs:
   generate-wiki:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
 
     steps:
       - name: Checkout code
@@ -26,23 +30,25 @@ jobs:
           ./target/release/image-view --help > CLI.md
 
       - name: Clone Wiki
+        if: ${{ env.GITHUB_TOKEN != '' }}
         run: |
-          # Rewrite SSH URL to HTTPS URL with token authentication for Git operations
-          git clone git@github.com:${{ github.repository }}.wiki.git wiki
-          cd wiki
-          git config --local url."https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "git@github.com:"
+          git clone https://x-access-token:${{ env.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki
 
       - name: Copy CLI docs to Wiki
+        if: ${{ env.GITHUB_TOKEN != '' }}
         run: |
           mv CLI.md wiki/CLI.md
 
       - name: Commit and push Wiki changes
+        if: ${{ env.GITHUB_TOKEN != '' }}
         run: |
           cd wiki
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add CLI.md
+          if git diff --cached --quiet; then
+            echo "No wiki changes to publish."
+            exit 0
+          fi
           git commit -m "Update CLI documentation from the --help output"
           git push
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
