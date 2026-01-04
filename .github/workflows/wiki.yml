@@ -10,6 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
+    env:
+      GITHUB_TOKEN: ${{ github.token }}
 
     steps:
       - name: Checkout code
@@ -28,17 +30,17 @@ jobs:
           ./target/release/image-view --help > CLI.md
 
       - name: Clone Wiki
-        if: ${{ secrets.WIKI_TOKEN != '' }}
+        if: ${{ env.GITHUB_TOKEN != '' }}
         run: |
-          git clone https://x-access-token:${{ secrets.WIKI_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki
+          git clone https://x-access-token:${{ env.GITHUB_TOKEN }}@github.com/${{ github.repository }}.wiki.git wiki
 
       - name: Copy CLI docs to Wiki
-        if: ${{ secrets.WIKI_TOKEN != '' }}
+        if: ${{ env.GITHUB_TOKEN != '' }}
         run: |
           mv CLI.md wiki/CLI.md
 
       - name: Commit and push Wiki changes
-        if: ${{ secrets.WIKI_TOKEN != '' }}
+        if: ${{ env.GITHUB_TOKEN != '' }}
         run: |
           cd wiki
           git config user.name "github-actions[bot]"
