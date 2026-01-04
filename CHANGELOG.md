@@ -3,8 +3,6 @@
 All notable changes to this project are documented in this file.
 This format is based on Keep a Changelog and follows Semantic Versioning.
 
-## [Unreleased]
-
 ## [0.5.0] - 2025-09-18
 ### Changed
 - Fix gallery rendering alignment by using explicit CRLF line endings in raw mode.
