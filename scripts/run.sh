@@ -14,23 +14,7 @@ if [ "$(basename "$SCRIPT_DIR")" = "scripts" ]; then
 else
   ROOT_DIR="$SCRIPT_DIR"
 fi
-SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$ROOT_DIR/scripts/script-helpers}"
-if [ -f "$SCRIPT_HELPERS_DIR/helpers.sh" ]; then
-  source "$SCRIPT_HELPERS_DIR/helpers.sh"
-  shlib_import help logging
-  parse_common_args "$@"
-else
-  show_help_and_exit() {
-    echo "Usage: $1"
-    echo
-    echo "$2"
-    if [ -n "$3" ]; then
-      echo
-      echo "$3"
-    fi
-    exit 0
-  }
-fi
+source "$ROOT_DIR/scripts/include.sh" "$@"
 
 # Process optarg parameters passed to the script.
 gallery_mode=0

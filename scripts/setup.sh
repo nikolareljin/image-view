@@ -18,10 +18,7 @@ if [ "$(basename "$SCRIPT_DIR")" = "scripts" ]; then
 else
   ROOT_DIR="$SCRIPT_DIR"
 fi
-SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$ROOT_DIR/scripts/script-helpers}"
-source "$SCRIPT_HELPERS_DIR/helpers.sh"
-shlib_import help logging
-parse_common_args "$@"
+source "$ROOT_DIR/scripts/include.sh" "$@"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 PROFILE_FILE="${PROFILE_FILE:-$HOME/.profile}"
 

@@ -7,13 +7,11 @@
 # ----------------------------------------------------
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ "$(basename "$SCRIPT_DIR")" = "scripts" ]; then
-  SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$SCRIPT_DIR/script-helpers}"
+  ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 else
-  SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$SCRIPT_DIR/scripts/script-helpers}"
+  ROOT_DIR="$SCRIPT_DIR"
 fi
-source "$SCRIPT_HELPERS_DIR/helpers.sh"
-shlib_import help logging
-parse_common_args "$@"
+source "$ROOT_DIR/scripts/include.sh" "$@"
 
 BUILD_MACOS="${BUILD_MACOS:-0}"
 RUN_LINT="${RUN_LINT:-1}"
