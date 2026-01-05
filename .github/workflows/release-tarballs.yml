@@ -77,21 +77,62 @@ jobs:
     needs: build-tarballs
     runs-on: ubuntu-latest
     steps:
+      - name: Validate secrets
+        shell: bash
+        run: |
+          set -euo pipefail
+          errors=()
+
+          if [ -z "${HOMEBREW_TAP_GITHUB_TOKEN:-}" ]; then
+            errors+=("❌ HOMEBREW_TAP_GITHUB_TOKEN secret is not set")
+          fi
+
+          if [ -z "${HOMEBREW_TAP_REPO:-}" ]; then
+            errors+=("❌ HOMEBREW_TAP_REPO secret is not set")
+          fi
+
+          if [ ${#errors[@]} -gt 0 ]; then
+            echo "::error::Missing required secrets:"
+            for error in "${errors[@]}"; do
+              echo "::error::$error"
+            done
+            echo ""
+            echo "Please configure the following repository secrets:"
+            echo "1. HOMEBREW_TAP_GITHUB_TOKEN - Personal Access Token with repo access"
+            echo "2. HOMEBREW_TAP_REPO - Repository name (e.g., 'username/homebrew-tap')"
+            exit 1
+          fi
+
+          echo "✅ All required secrets are configured"
+        env:
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          HOMEBREW_TAP_REPO: ${{ secrets.HOMEBREW_TAP_REPO }}
+
       - name: Download sha artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: sha256-*
           merge-multiple: true
 
+      - name: Verify SHA artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "📦 Downloaded SHA artifacts:"
+          ls -la sha256-*.txt
+          echo ""
+          echo "SHA256 hashes:"
+          cat sha256-*.txt
+
       - name: Checkout tap repo
         shell: bash
         run: |
           set -euo pipefail
-          if [ -z "${HOMEBREW_TAP_REPO:-}" ]; then
-            echo "HOMEBREW_TAP_REPO is not set." >&2
-            exit 1
-          fi
+          echo "📥 Cloning tap repository: ${HOMEBREW_TAP_REPO}"
           git clone "https://x-access-token:${HOMEBREW_TAP_GITHUB_TOKEN}@github.com/${HOMEBREW_TAP_REPO}.git" tap
+          cd tap
+          echo "✅ Successfully cloned tap repository"
+          echo "Current branch: $(git branch --show-current)"
         env:
           HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
           HOMEBREW_TAP_REPO: ${{ secrets.HOMEBREW_TAP_REPO }}
@@ -106,11 +147,29 @@ jobs:
           else
             version="$tag"
           fi
+
+          echo "🔖 Tag: $tag"
+          echo "📌 Version: $version"
+
           sha_macos_arm64="$(awk '{print $1}' sha256-macos-arm64.txt)"
           sha_macos_x86_64="$(awk '{print $1}' sha256-macos-x86_64.txt)"
           sha_linux_x86_64="$(awk '{print $1}' sha256-linux-x86_64.txt)"
 
+          echo "🔐 SHA256 hashes:"
+          echo "  macOS ARM64:   $sha_macos_arm64"
+          echo "  macOS x86_64:  $sha_macos_x86_64"
+          echo "  Linux x86_64:  $sha_linux_x86_64"
+
           formula="tap/Formula/image-view.rb"
+
+          if [ ! -f "$formula" ]; then
+            echo "::error::Formula file not found: $formula"
+            exit 1
+          fi
+
+          echo ""
+          echo "📝 Updating formula..."
+
           VERSION="$version" \
           SHA_MACOS_ARM64="$sha_macos_arm64" \
           SHA_MACOS_X86_64="$sha_macos_x86_64" \
@@ -128,13 +187,21 @@ jobs:
           sha_macos_x86_64 = os.environ["SHA_MACOS_X86_64"]
           sha_linux_x86_64 = os.environ["SHA_LINUX_X86_64"]
 
+          # Validate SHA256 format
+          for sha, name in [(sha_macos_arm64, "macOS ARM64"),
+                            (sha_macos_x86_64, "macOS x86_64"),
+                            (sha_linux_x86_64, "Linux x86_64")]:
+              if not re.match(r'^[0-9a-f]{64}$', sha):
+                  raise SystemExit(f"Invalid SHA256 format for {name}: {sha}")
+
+          # Update version
           content, count = re.subn(r'version ".*?"', f'version "{version}"', content, count=1)
           if count != 1:
               raise SystemExit("Expected to replace exactly one version line.")
 
           def replace_sha(content, platform, sha):
-              pattern = rf'(url ".*{re.escape(platform)}.*"\\n\\s*sha256 ")([0-9a-f]{{64}})(")'
-              updated, count = re.subn(pattern, rf'\\1{sha}\\3', content, count=1)
+              pattern = rf'(url ".*{re.escape(platform)}.*"\\n\s*sha256 ")([0-9a-f]{{64}})(")'
+              updated, count = re.subn(pattern, rf'\1{sha}\3', content, count=1)
               if count != 1:
                   raise SystemExit(f"Expected to replace one sha256 for {platform}, found {count}.")
               return updated
@@ -144,15 +211,114 @@ jobs:
           content = replace_sha(content, "linux-x86_64", sha_linux_x86_64)
 
           formula_path.write_text(content)
+          print("✅ Formula updated successfully")
           PY
+
+      - name: Show changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd tap
+          echo "📋 Changes to be committed:"
+          echo ""
+          git diff --color=always Formula/image-view.rb || true
+          echo ""
+
+          if ! git diff --quiet Formula/image-view.rb; then
+            echo "✅ Formula has been modified"
+          else
+            echo "::warning::No changes detected in formula"
+          fi
+
+      - name: Validate formula syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd tap
+          echo "🔍 Validating Ruby syntax..."
+          ruby -c Formula/image-view.rb
+          echo "✅ Formula syntax is valid"
 
       - name: Commit and push
         shell: bash
         run: |
           set -euo pipefail
           cd tap
+
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add Formula/image-view.rb
-          git commit -m "Update image-view to ${GITHUB_REF_NAME}"
-          git push
+
+          if ! git diff --quiet Formula/image-view.rb; then
+            git add Formula/image-view.rb
+            git commit -m "Update image-view to ${GITHUB_REF_NAME}" -m "Automated update from release workflow"
+
+            echo "🚀 Pushing changes to tap repository..."
+
+            # Retry logic for push in case of conflicts
+            max_retries=3
+            retry_count=0
+
+            while [ $retry_count -lt $max_retries ]; do
+              if git push; then
+                echo "✅ Successfully pushed to tap repository"
+                exit 0
+              else
+                retry_count=$((retry_count + 1))
+                if [ $retry_count -lt $max_retries ]; then
+                  echo "⚠️  Push failed, retrying ($retry_count/$max_retries)..."
+                  git pull --rebase
+                  sleep 2
+                else
+                  echo "::error::Failed to push after $max_retries attempts"
+                  exit 1
+                fi
+              fi
+            done
+          else
+            echo "ℹ️  No changes to commit"
+          fi
+
+      - name: Generate summary
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo "## 🍺 Homebrew Tap Update" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Release:** \`${GITHUB_REF_NAME}\`" >> $GITHUB_STEP_SUMMARY
+
+          tag="${GITHUB_REF_NAME}"
+          if [[ "$tag" == v* ]]; then
+            version="${tag#v}"
+          else
+            version="$tag"
+          fi
+          echo "**Version:** \`$version\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          echo "### 📦 Artifacts" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "| Platform | SHA256 |" >> $GITHUB_STEP_SUMMARY
+          echo "|----------|--------|" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f sha256-macos-arm64.txt ]; then
+            sha=$(awk '{print $1}' sha256-macos-arm64.txt)
+            echo "| macOS ARM64 | \`${sha:0:16}...\` |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f sha256-macos-x86_64.txt ]; then
+            sha=$(awk '{print $1}' sha256-macos-x86_64.txt)
+            echo "| macOS x86_64 | \`${sha:0:16}...\` |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          if [ -f sha256-linux-x86_64.txt ]; then
+            sha=$(awk '{print $1}' sha256-linux-x86_64.txt)
+            echo "| Linux x86_64 | \`${sha:0:16}...\` |" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🔗 Repository" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Tap: [\`${HOMEBREW_TAP_REPO}\`](https://github.com/${HOMEBREW_TAP_REPO})" >> $GITHUB_STEP_SUMMARY
+        env:
+          HOMEBREW_TAP_REPO: ${{ secrets.HOMEBREW_TAP_REPO }}
