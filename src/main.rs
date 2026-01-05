@@ -116,9 +116,11 @@ impl ImageRenderer {
         let new_width = ((img_width as f32 * scale).round() as u32).max(1);
         let new_height = ((img_height as f32 * scale).round() as u32).max(1);
 
-        let resized_img =
-            self.image
-                .resize(new_width, new_height, image::imageops::FilterType::CatmullRom);
+        let resized_img = self.image.resize(
+            new_width,
+            new_height,
+            image::imageops::FilterType::CatmullRom,
+        );
 
         let stdout = io::stdout();
         let mut stdout = stdout.lock();

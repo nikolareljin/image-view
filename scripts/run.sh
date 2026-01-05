@@ -74,6 +74,14 @@ if [ $? -ne 0 ]; then
     exit 1
 fi
 
+# Reformat with cargo fmt --
+cargo fmt --
+if [ $? -ne 0 ]; then
+    echo "Linting failed"
+    exit 1
+fi
+
+# Cargo build
 cargo build --release
 if [ $? -ne 0 ]; then
     echo "Cargo build failed"
