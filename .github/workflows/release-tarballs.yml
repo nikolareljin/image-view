@@ -116,35 +116,35 @@ jobs:
           SHA_MACOS_X86_64="$sha_macos_x86_64" \
           SHA_LINUX_X86_64="$sha_linux_x86_64" \
           python - <<'PY'
-import re
-import os
-from pathlib import Path
+          import re
+          import os
+          from pathlib import Path
 
-formula_path = Path("tap/Formula/image-view.rb")
-content = formula_path.read_text()
+          formula_path = Path("tap/Formula/image-view.rb")
+          content = formula_path.read_text()
 
-version = os.environ["VERSION"]
-sha_macos_arm64 = os.environ["SHA_MACOS_ARM64"]
-sha_macos_x86_64 = os.environ["SHA_MACOS_X86_64"]
-sha_linux_x86_64 = os.environ["SHA_LINUX_X86_64"]
+          version = os.environ["VERSION"]
+          sha_macos_arm64 = os.environ["SHA_MACOS_ARM64"]
+          sha_macos_x86_64 = os.environ["SHA_MACOS_X86_64"]
+          sha_linux_x86_64 = os.environ["SHA_LINUX_X86_64"]
 
-content, count = re.subn(r'version ".*?"', f'version "{version}"', content, count=1)
-if count != 1:
-    raise SystemExit("Expected to replace exactly one version line.")
+          content, count = re.subn(r'version ".*?"', f'version "{version}"', content, count=1)
+          if count != 1:
+              raise SystemExit("Expected to replace exactly one version line.")
 
-def replace_sha(content, platform, sha):
-    pattern = rf'(url ".*{re.escape(platform)}.*"\\n\\s*sha256 ")([0-9a-f]{{64}})(")'
-    updated, count = re.subn(pattern, rf'\\1{sha}\\3', content, count=1)
-    if count != 1:
-        raise SystemExit(f"Expected to replace one sha256 for {platform}, found {count}.")
-    return updated
+          def replace_sha(content, platform, sha):
+              pattern = rf'(url ".*{re.escape(platform)}.*"\\n\\s*sha256 ")([0-9a-f]{{64}})(")'
+              updated, count = re.subn(pattern, rf'\\1{sha}\\3', content, count=1)
+              if count != 1:
+                  raise SystemExit(f"Expected to replace one sha256 for {platform}, found {count}.")
+              return updated
 
-content = replace_sha(content, "macos-arm64", sha_macos_arm64)
-content = replace_sha(content, "macos-x86_64", sha_macos_x86_64)
-content = replace_sha(content, "linux-x86_64", sha_linux_x86_64)
+          content = replace_sha(content, "macos-arm64", sha_macos_arm64)
+          content = replace_sha(content, "macos-x86_64", sha_macos_x86_64)
+          content = replace_sha(content, "linux-x86_64", sha_linux_x86_64)
 
-formula_path.write_text(content)
-PY
+          formula_path.write_text(content)
+          PY
 
       - name: Commit and push
         shell: bash
