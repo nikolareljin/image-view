@@ -31,7 +31,7 @@ Typical usage:
 image-view ./test.jpeg
 ```
 
-This command will render `test.jpeg` directly in your terminal, provided your terminal emulator supports inline image display.
+This command will "render" `test.jpeg` directly in your terminal as a pixelated content.
 
 Example: 
 
