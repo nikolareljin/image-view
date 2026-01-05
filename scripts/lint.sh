@@ -11,13 +11,27 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ "$(basename "$SCRIPT_DIR")" = "scripts" ]; then
-  SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$SCRIPT_DIR/script-helpers}"
+  ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 else
-  SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$SCRIPT_DIR/scripts/script-helpers}"
+  ROOT_DIR="$SCRIPT_DIR"
 fi
-source "$SCRIPT_HELPERS_DIR/helpers.sh"
-shlib_import help logging
-parse_common_args "$@"
+SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$ROOT_DIR/scripts/script-helpers}"
+if [ -f "$SCRIPT_HELPERS_DIR/helpers.sh" ]; then
+  source "$SCRIPT_HELPERS_DIR/helpers.sh"
+  shlib_import help logging
+  parse_common_args "$@"
+else
+  show_help_and_exit() {
+    echo "Usage: $1"
+    echo
+    echo "$2"
+    if [ -n "$3" ]; then
+      echo
+      echo "$3"
+    fi
+    exit 0
+  }
+fi
 
 fix_mode=0
 while getopts "hf?" opt; do
@@ -35,7 +49,6 @@ while getopts "hf?" opt; do
   esac
 done
 
-ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 export CARGO_INCREMENTAL=0
 export CARGO_TERM_COLOR=always
 CARGO_TARGET_DIR="${CARGO_TARGET_DIR:-$ROOT_DIR/target}"

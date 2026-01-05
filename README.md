@@ -71,6 +71,36 @@ This installs `image-view` into `~/.cargo/bin`. Ensure it is on your `PATH`.
 
 - edit `./src/main.rs`
 - build: `cargo run ./src/test.jpeg`
+- local run (with lint checks): `./run`
+
+## Scripts
+
+Run from repo root unless noted.
+
+`./run`
+- `-h`: show help
+- `-g [<dir>]`: gallery mode (optional directory)
+
+`./scripts/lint.sh`
+- `-h`: show help
+- `-f`: auto-fix formatting and clippy where possible, then re-check
+
+`./scripts/build.sh`
+- No flags
+
+`./scripts/test.sh`
+- No flags
+
+`./setup`
+- No flags (uses env vars `INSTALL_DIR`, `PROFILE_FILE`)
+
+`./update`
+- No flags
+
+## Local Development
+
+- `./run` runs linting (`cargo fmt --check` and `cargo clippy -D warnings`) before building and running.
+- `./setup` configures a pre-commit hook to run `./scripts/lint.sh`.
 
 ## Usage
 

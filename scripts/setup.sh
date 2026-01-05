@@ -18,16 +18,19 @@ if [ "$(basename "$SCRIPT_DIR")" = "scripts" ]; then
 else
   ROOT_DIR="$SCRIPT_DIR"
 fi
-SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$ROOT_DIR/scripts/script-helpers}"
-source "$SCRIPT_HELPERS_DIR/helpers.sh"
-shlib_import help logging
-parse_common_args "$@"
+source "$ROOT_DIR/scripts/include.sh" "$@"
 INSTALL_DIR="${INSTALL_DIR:-$HOME/.local/bin}"
 PROFILE_FILE="${PROFILE_FILE:-$HOME/.profile}"
 
 if ! command -v cargo >/dev/null 2>&1; then
   echo "Cargo is required. Install it via rustup: https://rustup.rs" >&2
   exit 1
+fi
+
+if command -v git >/dev/null 2>&1; then
+  if git -C "$ROOT_DIR" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    git -C "$ROOT_DIR" config core.hooksPath .githooks
+  fi
 fi
 
 mkdir -p "$INSTALL_DIR"
