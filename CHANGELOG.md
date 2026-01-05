@@ -3,6 +3,11 @@
 All notable changes to this project are documented in this file.
 This format is based on Keep a Changelog and follows Semantic Versioning.
 
+## [0.5.1] - 2026-01-04
+### Changed
+- Apply smoother resampling when rendering images (both upscaling and downscaling) for cleaner CLI output.
+- Enforce local linting via `./run` and a git pre-commit hook configured during setup.
+
 ## [0.5.0] - 2025-09-18
 ### Changed
 - Fix gallery rendering alignment by using explicit CRLF line endings in raw mode.
@@ -31,7 +36,8 @@ This format is based on Keep a Changelog and follows Semantic Versioning.
 - Add Release info after tagging and release GH Action completes building artifacts
 - Add links to built artifacts in the Release information after the process completes.
 
-[Unreleased]: https://github.com/nikolareljin/image-view/compare/0.5.0...HEAD
+[Unreleased]: https://github.com/nikolareljin/image-view/compare/0.5.1...HEAD
+[0.5.1]: https://github.com/nikolareljin/image-view/releases/tag/0.5.1
 [0.5.0]: https://github.com/nikolareljin/image-view/releases/tag/0.5.0
 [0.2.0]: https://github.com/nikolareljin/image-view/releases/tag/0.2.0
 [0.1.0-RC]: https://github.com/nikolareljin/image-view/releases/tag/0.1.0-RC

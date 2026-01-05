@@ -110,7 +110,7 @@ impl ImageRenderer {
 
         // Scale so that the image fits within both max_width and max_height constraints.
         // Choose the smaller scale factor to ensure both dimensions fit.
-        let scale = scale_h.min(scale_w).min(1.0); // Don't upscale
+        let scale = scale_h.min(scale_w);
 
         // Ensure new_width is at least 1 to avoid zero-width images
         let new_width = ((img_width as f32 * scale).round() as u32).max(1);
@@ -118,7 +118,7 @@ impl ImageRenderer {
 
         let resized_img =
             self.image
-                .resize(new_width, new_height, image::imageops::FilterType::Nearest);
+                .resize(new_width, new_height, image::imageops::FilterType::CatmullRom);
 
         let stdout = io::stdout();
         let mut stdout = stdout.lock();

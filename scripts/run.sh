@@ -10,13 +10,27 @@
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 if [ "$(basename "$SCRIPT_DIR")" = "scripts" ]; then
-  SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$SCRIPT_DIR/script-helpers}"
+  ROOT_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 else
-  SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$SCRIPT_DIR/scripts/script-helpers}"
+  ROOT_DIR="$SCRIPT_DIR"
 fi
-source "$SCRIPT_HELPERS_DIR/helpers.sh"
-shlib_import help logging
-parse_common_args "$@"
+SCRIPT_HELPERS_DIR="${SCRIPT_HELPERS_DIR:-$ROOT_DIR/scripts/script-helpers}"
+if [ -f "$SCRIPT_HELPERS_DIR/helpers.sh" ]; then
+  source "$SCRIPT_HELPERS_DIR/helpers.sh"
+  shlib_import help logging
+  parse_common_args "$@"
+else
+  show_help_and_exit() {
+    echo "Usage: $1"
+    echo
+    echo "$2"
+    if [ -n "$3" ]; then
+      echo
+      echo "$3"
+    fi
+    exit 0
+  }
+fi
 
 # Process optarg parameters passed to the script.
 gallery_mode=0
@@ -25,7 +39,8 @@ additional_param=""
 while getopts "h?g" opt; do
   case $opt in
     h)
-      show_help_and_exit "$0" "Run the release binary against a test image." ""
+      show_help_and_exit "$0" "Run the release binary against a test image." \
+        "PARAMETERS:\n  -h           : Show help message and exit.\n  -g [<dir>]   : Gallery | Gallery with directory"
       additional_param="-h"
       ;;
     g)
@@ -49,6 +64,15 @@ while getopts "h?g" opt; do
 done
 
 test_image="test.jpeg"
+
+(
+  cd "$ROOT_DIR"
+  ./scripts/lint.sh
+)
+if [ $? -ne 0 ]; then
+    echo "Linting failed"
+    exit 1
+fi
 
 cargo build --release
 if [ $? -ne 0 ]; then
