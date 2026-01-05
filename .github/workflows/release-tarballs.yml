@@ -1,0 +1,158 @@
+name: Release tarballs
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+      - "*.*.*"
+      - "v*.*.*-rc"
+      - "*.*.*-rc"
+      - "v*.*.*-RC"
+      - "*.*.*-RC"
+
+permissions:
+  contents: write
+
+jobs:
+  build-tarballs:
+    name: Build ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            platform: macos-arm64
+          - os: macos-13
+            platform: macos-x86_64
+          - os: ubuntu-latest
+            platform: linux-x86_64
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Build release binary
+        run: cargo build --release
+
+      - name: Package tarball
+        id: package
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          tarball="image-view-${tag}-${{ matrix.platform }}.tar.gz"
+          tar -czf "$tarball" -C target/release image-view
+          if command -v shasum >/dev/null 2>&1; then
+            sha256="$(shasum -a 256 "$tarball" | awk '{print $1}')"
+          else
+            sha256="$(sha256sum "$tarball" | awk '{print $1}')"
+          fi
+          echo "tarball=$tarball" >> "$GITHUB_OUTPUT"
+          echo "sha256=$sha256" >> "$GITHUB_OUTPUT"
+
+      - name: Upload release asset
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: ${{ steps.package.outputs.tarball }}
+          update_existing: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Write sha metadata
+        run: |
+          set -euo pipefail
+          printf "%s  %s\n" "${{ steps.package.outputs.sha256 }}" "${{ steps.package.outputs.tarball }}" > "sha256-${{ matrix.platform }}.txt"
+
+      - name: Upload sha artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: sha256-${{ matrix.platform }}
+          path: sha256-${{ matrix.platform }}.txt
+
+  bump-homebrew:
+    name: Bump Homebrew formula
+    needs: build-tarballs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download sha artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: sha256-*
+          merge-multiple: true
+
+      - name: Checkout tap repo
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ -z "${HOMEBREW_TAP_REPO:-}" ]; then
+            echo "HOMEBREW_TAP_REPO is not set." >&2
+            exit 1
+          fi
+          git clone "https://x-access-token:${HOMEBREW_TAP_GITHUB_TOKEN}@github.com/${HOMEBREW_TAP_REPO}.git" tap
+        env:
+          HOMEBREW_TAP_GITHUB_TOKEN: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+          HOMEBREW_TAP_REPO: ${{ secrets.HOMEBREW_TAP_REPO }}
+
+      - name: Update formula
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          if [[ "$tag" == v* ]]; then
+            version="${tag#v}"
+          else
+            version="$tag"
+          fi
+          sha_macos_arm64="$(awk '{print $1}' sha256-macos-arm64.txt)"
+          sha_macos_x86_64="$(awk '{print $1}' sha256-macos-x86_64.txt)"
+          sha_linux_x86_64="$(awk '{print $1}' sha256-linux-x86_64.txt)"
+
+          formula="tap/Formula/image-view.rb"
+          VERSION="$version" \
+          SHA_MACOS_ARM64="$sha_macos_arm64" \
+          SHA_MACOS_X86_64="$sha_macos_x86_64" \
+          SHA_LINUX_X86_64="$sha_linux_x86_64" \
+          python - <<'PY'
+import re
+import os
+from pathlib import Path
+
+formula_path = Path("tap/Formula/image-view.rb")
+content = formula_path.read_text()
+
+version = os.environ["VERSION"]
+sha_macos_arm64 = os.environ["SHA_MACOS_ARM64"]
+sha_macos_x86_64 = os.environ["SHA_MACOS_X86_64"]
+sha_linux_x86_64 = os.environ["SHA_LINUX_X86_64"]
+
+content, count = re.subn(r'version ".*?"', f'version "{version}"', content, count=1)
+if count != 1:
+    raise SystemExit("Expected to replace exactly one version line.")
+
+def replace_sha(content, platform, sha):
+    pattern = rf'(url ".*{re.escape(platform)}.*"\\n\\s*sha256 ")([0-9a-f]{{64}})(")'
+    updated, count = re.subn(pattern, rf'\\1{sha}\\3', content, count=1)
+    if count != 1:
+        raise SystemExit(f"Expected to replace one sha256 for {platform}, found {count}.")
+    return updated
+
+content = replace_sha(content, "macos-arm64", sha_macos_arm64)
+content = replace_sha(content, "macos-x86_64", sha_macos_x86_64)
+content = replace_sha(content, "linux-x86_64", sha_linux_x86_64)
+
+formula_path.write_text(content)
+PY
+
+      - name: Commit and push
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/image-view.rb
+          git commit -m "Update image-view to ${GITHUB_REF_NAME}"
+          git push
