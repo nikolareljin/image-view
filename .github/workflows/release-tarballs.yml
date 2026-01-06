@@ -23,8 +23,10 @@ jobs:
         include:
           - os: macos-14
             platform: macos-arm64
-          - os: macos-12
+          - os: macos-14
             platform: macos-x86_64
+            rust_target: x86_64-apple-darwin
+            macos_deployment_target: "10.13"
           - os: ubuntu-latest
             platform: linux-x86_64
     steps:
@@ -34,7 +36,28 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Build release binary
-        run: cargo build --release
+        id: build
+        shell: bash
+        run: |
+          set -euo pipefail
+          target="${{ matrix.rust_target }}"
+          if [ -n "$target" ]; then
+            deployment_target="${{ matrix.macos_deployment_target }}"
+            if [ -n "$deployment_target" ]; then
+              export MACOSX_DEPLOYMENT_TARGET="$deployment_target"
+            fi
+            rustup target add "$target"
+            cargo build --release --target "$target"
+            bin_path="target/$target/release/image-view"
+          else
+            cargo build --release
+            bin_path="target/release/image-view"
+          fi
+          if [ ! -f "$bin_path" ]; then
+            echo "::error::Built binary not found at $bin_path"
+            exit 1
+          fi
+          echo "bin_path=$bin_path" >> "$GITHUB_OUTPUT"
 
       - name: Package tarball
         id: package
@@ -43,7 +66,9 @@ jobs:
           set -euo pipefail
           tag="${GITHUB_REF_NAME}"
           tarball="image-view-${tag}-${{ matrix.platform }}.tar.gz"
-          tar -czf "$tarball" -C target/release image-view
+          bin_path="${{ steps.build.outputs.bin_path }}"
+          bin_dir="$(dirname "$bin_path")"
+          tar -czf "$tarball" -C "$bin_dir" image-view
           if command -v shasum >/dev/null 2>&1; then
             sha256="$(shasum -a 256 "$tarball" | awk '{print $1}')"
           else
