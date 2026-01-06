@@ -8,6 +8,12 @@ This format is based on Keep a Changelog and follows Semantic Versioning.
 - Apply smoother resampling when rendering images (both upscaling and downscaling) for cleaner CLI output.
 - Enforce local linting via `./run` and a git pre-commit hook configured during setup.
 
+## [0.6.0] - 2026-01-05
+### Added
+- Add Homebrew tap documentation and expanded docs coverage under `docs/` (usage, build, release, CI, and internals).
+- Add release tarball workflow for macOS (arm64/x86_64) and Linux x86_64.
+- Add automation to update the Homebrew tap formula on new releases.
+
 ## [0.5.0] - 2025-09-18
 ### Changed
 - Fix gallery rendering alignment by using explicit CRLF line endings in raw mode.
@@ -36,7 +42,8 @@ This format is based on Keep a Changelog and follows Semantic Versioning.
 - Add Release info after tagging and release GH Action completes building artifacts
 - Add links to built artifacts in the Release information after the process completes.
 
-[Unreleased]: https://github.com/nikolareljin/image-view/compare/0.5.1...HEAD
+[Unreleased]: https://github.com/nikolareljin/image-view/compare/0.6.0...HEAD
+[0.6.0]: https://github.com/nikolareljin/image-view/releases/tag/0.6.0
 [0.5.1]: https://github.com/nikolareljin/image-view/releases/tag/0.5.1
 [0.5.0]: https://github.com/nikolareljin/image-view/releases/tag/0.5.0
 [0.2.0]: https://github.com/nikolareljin/image-view/releases/tag/0.2.0
