@@ -225,11 +225,27 @@ jobs:
               raise SystemExit("Expected to replace exactly one version line.")
 
           def replace_sha(content, platform, sha):
-              pattern = rf'(url ".*{re.escape(platform)}.*"\\n\s*sha256 ")([0-9a-f]{{64}})(")'
-              updated, count = re.subn(pattern, rf'\1{sha}\3', content, count=1)
-              if count != 1:
-                  raise SystemExit(f"Expected to replace one sha256 for {platform}, found {count}.")
-              return updated
+              lines = content.splitlines()
+              updated = 0
+              i = 0
+              while i < len(lines):
+                  if re.search(rf'url ".*{re.escape(platform)}.*"', lines[i]):
+                      j = i + 1
+                      while j < len(lines):
+                          if "url " in lines[j]:
+                              break
+                          if "sha256" in lines[j]:
+                              new_line, count = re.subn(r'(sha256 ")([0-9a-f]{64})(")', rf'\1{sha}\3', lines[j])
+                              if count != 1:
+                                  raise SystemExit(f"Expected one sha256 match for {platform} on line: {lines[j]}")
+                              lines[j] = new_line
+                              updated += 1
+                              break
+                          j += 1
+                  i += 1
+              if updated != 1:
+                  raise SystemExit(f"Expected to replace one sha256 for {platform}, found {updated}.")
+              return "\n".join(lines)
 
           content = replace_sha(content, "macos-arm64", sha_macos_arm64)
           content = replace_sha(content, "macos-x86_64", sha_macos_x86_64)
