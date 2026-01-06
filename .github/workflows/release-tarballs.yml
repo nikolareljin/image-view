@@ -234,8 +234,8 @@ jobs:
                       while j < len(lines):
                           if "url " in lines[j]:
                               break
-                          if "sha256" in lines[j]:
-                              new_line, count = re.subn(r'(sha256 ")([0-9a-f]{64})(")', rf'\1{sha}\3', lines[j])
+                          if lines[j].lstrip().startswith("sha256"):
+                              new_line, count = re.subn(r'[0-9a-f]{64}', sha, lines[j], count=1)
                               if count != 1:
                                   raise SystemExit(f"Expected one sha256 match for {platform} on line: {lines[j]}")
                               lines[j] = new_line
@@ -245,7 +245,7 @@ jobs:
                   i += 1
               if updated != 1:
                   raise SystemExit(f"Expected to replace one sha256 for {platform}, found {updated}.")
-              return "\n".join(lines)
+              return "\n".join(lines) + "\n"
 
           content = replace_sha(content, "macos-arm64", sha_macos_arm64)
           content = replace_sha(content, "macos-x86_64", sha_macos_x86_64)
