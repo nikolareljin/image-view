@@ -5,8 +5,10 @@ on:
     tags:
       - 'v*.*.*'
       - '*.*.*'
-      - '*.*.*-rc'
-      - '*.*.*-RC'
+      - 'v*.*.*-rc*'
+      - '*.*.*-rc*'
+      - 'v*.*.*-RC*'
+      - '*.*.*-RC*'
 
 permissions:
   contents: write
