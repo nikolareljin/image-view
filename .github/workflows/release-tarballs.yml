@@ -5,10 +5,10 @@ on:
     tags:
       - "v*.*.*"
       - "*.*.*"
-      - "v*.*.*-rc"
-      - "*.*.*-rc"
-      - "v*.*.*-RC"
-      - "*.*.*-RC"
+      - "v*.*.*-rc*"
+      - "*.*.*-rc*"
+      - "v*.*.*-RC*"
+      - "*.*.*-RC*"
 
 permissions:
   contents: write
@@ -23,7 +23,7 @@ jobs:
         include:
           - os: macos-14
             platform: macos-arm64
-          - os: macos-13
+          - os: macos-12
             platform: macos-x86_64
           - os: ubuntu-latest
             platform: linux-x86_64
@@ -174,7 +174,7 @@ jobs:
           SHA_MACOS_ARM64="$sha_macos_arm64" \
           SHA_MACOS_X86_64="$sha_macos_x86_64" \
           SHA_LINUX_X86_64="$sha_linux_x86_64" \
-          python - <<'PY'
+          python3 - <<'PY'
           import re
           import os
           from pathlib import Path
