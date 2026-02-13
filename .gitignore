@@ -21,3 +21,5 @@ coverage.*
 lcov.info
 junit.xml
 test-results/
+
+/ignore/
