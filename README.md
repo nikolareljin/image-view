@@ -55,7 +55,7 @@ Exit the gallery mode: press `q` .
 From Git (recommended):
 
 ```bash
-cargo install --git https://github.com/nikolareljin/image-view --bin image-view
+cargo install --locked --git https://github.com/nikolareljin/image-view --bin image-view
 ```
 
 From the repository root:

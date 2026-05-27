@@ -3,6 +3,10 @@
 All notable changes to this project are documented in this file.
 This format is based on Keep a Changelog and follows Semantic Versioning.
 
+## [0.6.2] - 2026-05-27
+### Fixed
+- Remove `image-data` default feature from `arboard` to drop the transitive `moxcms` dependency. This fixes `cargo install` failures on Rust < 1.85 caused by `moxcms v0.8.1` requiring edition 2024.
+
 ## [0.5.1] - 2026-01-04
 ### Changed
 - Apply smoother resampling when rendering images (both upscaling and downscaling) for cleaner CLI output.
@@ -42,7 +46,8 @@ This format is based on Keep a Changelog and follows Semantic Versioning.
 - Add Release info after tagging and release GH Action completes building artifacts
 - Add links to built artifacts in the Release information after the process completes.
 
-[Unreleased]: https://github.com/nikolareljin/image-view/compare/0.6.0...HEAD
+[Unreleased]: https://github.com/nikolareljin/image-view/compare/0.6.2...HEAD
+[0.6.2]: https://github.com/nikolareljin/image-view/releases/tag/0.6.2
 [0.6.0]: https://github.com/nikolareljin/image-view/releases/tag/0.6.0
 [0.5.1]: https://github.com/nikolareljin/image-view/releases/tag/0.5.1
 [0.5.0]: https://github.com/nikolareljin/image-view/releases/tag/0.5.0
