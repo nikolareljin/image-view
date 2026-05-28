@@ -17,3 +17,11 @@ fi
 source "$SCRIPT_HELPERS_DIR/helpers.sh"
 shlib_import help logging
 parse_common_args "$@"
+
+# Prefer the rustup-managed stable toolchain over any system-package cargo.
+# Only activate when both rustup and the stable toolchain are present.
+if command -v rustup &>/dev/null && rustup toolchain list 2>/dev/null | grep -q '^stable'; then
+  _toolchain_bin="$(rustup run stable rustc --print sysroot)/bin"
+  export PATH="$_toolchain_bin:$PATH"
+  unset _toolchain_bin
+fi
