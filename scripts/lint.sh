@@ -57,6 +57,16 @@ TMPDIR="${TMPDIR:-$CARGO_TARGET_DIR/tmp}"
 mkdir -p "$TMPDIR"
 export TMPDIR
 
+# Prefer the rustup-managed stable toolchain over a system-package cargo so
+# that lock-file format and edition requirements are always compatible.
+# Only activate it when both rustup and the stable toolchain are present;
+# otherwise fall back to whatever cargo is on PATH.
+if command -v rustup &>/dev/null && rustup toolchain list 2>/dev/null | grep -q '^stable'; then
+  _toolchain_bin="$(rustup run stable rustc --print sysroot)/bin"
+  export PATH="$_toolchain_bin:$PATH"
+  unset _toolchain_bin
+fi
+
 if [ "$fix_mode" -eq 1 ]; then
   echo "Running rustfmt"
   (
