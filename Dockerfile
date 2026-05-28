@@ -8,7 +8,7 @@ RUN apt-get update && apt-get install -y \
     build-essential \
     libgtk-3-dev \
     libglib2.0-dev \
-    libgdk-pixbuf2.0-dev \
+    libgdk-pixbuf-xlib-2.0-dev \
     curl \
     mingw-w64
 
