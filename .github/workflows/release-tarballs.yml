@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Tag to build tarballs for (e.g. 0.6.2). Required for manual runs."
+        description: "Exact existing tag to build tarballs for (e.g. 0.6.2 or v0.6.2 — must match the pushed tag exactly)."
         required: true
   push:
     tags:
