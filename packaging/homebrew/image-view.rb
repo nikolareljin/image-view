@@ -11,13 +11,16 @@ class ImageView < Formula
   version "PLACEHOLDER_VERSION_UPDATED_BY_CI"
   license "MIT"
 
-  depends_on "rust" => :build
-
-  def install
-    system "cargo", "install", "--locked", "--root", prefix, "--path", "."
-  end
-
-  test do
-    assert_match "image-view", shell_output("#{bin}/image-view --help")
-  end
+  # CI generates a binary formula (no build dependency). Structure:
+  #   on_macos do
+  #     if Hardware::CPU.arm?
+  #       url "...macos-arm64.tar.gz"; sha256 "..."
+  #     else
+  #       url "...macos-x86_64.tar.gz"; sha256 "..."
+  #     end
+  #   end
+  #   on_linux do
+  #     url "...linux-x86_64.tar.gz"; sha256 "..."
+  #   end
+  #   def install; bin.install "image-view"; end
 end
