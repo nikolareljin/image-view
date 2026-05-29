@@ -39,11 +39,10 @@ A GitHub Personal Access Token (PAT) with write access to the tap repository.
 
 ## Workflow Triggers
 
-The workflow runs when you push a tag matching these patterns:
-- `v*.*.*` (e.g., v0.5.0, v1.0.0)
-- `*.*.*` (e.g., 0.5.0, 1.0.0)
-- `v*.*.*-rc*` or `*.*.*-rc*` (release candidates, e.g., `0.6.3-rc1`, `v0.6.3-rc2`)
-- `v*.*.*-RC*` or `*.*.*-RC*` (release candidates)
+The workflow runs when you push a version tag. Supported formats:
+- `X.Y.Z` or `vX.Y.Z` (e.g., `0.6.0`, `v1.0.0`)
+- `X.Y.Z-rcN` or `vX.Y.Z-rcN` (release candidates, e.g., `0.6.3-rc1`, `v0.6.3-rc2`)
+- `X.Y.Z-RCN` or `vX.Y.Z-RCN` (uppercase release candidates)
 
 ## Creating a Release
 
@@ -72,22 +71,11 @@ After configuring the secrets, you can verify the setup by:
 2. **Test with a release:**
    - Create and push a test tag matching the workflow patterns (e.g., `0.6.3-rc1` or `v0.6.3-rc1`)
    - Watch the workflow run in the Actions tab
-   - Check the workflow logs for the "Validate secrets" step
-
-## Workflow Features
-
-The enhanced workflow includes:
-
-- **Secret Validation:** Checks that required secrets are configured before running
-- **SHA Verification:** Validates SHA256 hash format before updating formula
-- **Diff Output:** Shows what changes will be committed
-- **Formula Validation:** Validates Ruby syntax before committing
-- **Retry Logic:** Retries git push up to 3 times if it fails (handles concurrent updates)
-- **Step Summary:** Generates a summary with release info and SHA hashes
+   - Check the Actions tab logs for any errors (token or push failures appear early)
 
 ## Troubleshooting
 
-### Workflow fails with "Missing required secrets"
+### Workflow fails early (token/secret error)
 - Ensure `HOMEBREW_TAP_GITHUB_TOKEN` is configured in the image-view repository
 - Check that the token hasn't expired
 
