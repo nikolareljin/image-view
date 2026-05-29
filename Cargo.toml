@@ -2,6 +2,10 @@
 name = "image-view"
 version = "0.6.2"
 edition = "2021"
+description = "Render images directly in your terminal"
+license = "MIT"
+repository = "https://github.com/nikolareljin/image-view"
+authors = ["Nik Reljin <nikola.reljin@gmail.com>"]
 
 [dependencies]
 image = "0.24"
@@ -14,3 +18,17 @@ base64 = "0.22"
 [[bin]]
 name = "image-view"
 path = "./src/main.rs"
+
+[package.metadata.deb]
+name            = "image-view"
+maintainer      = "Nik Reljin <nikola.reljin@gmail.com>"
+copyright       = "2026, Nik Reljin"
+license-file    = ["LICENSE", "4"]
+extended-description = "image-view displays image files (JPEG, PNG, etc.) directly in your terminal using colored background blocks. Supports gallery mode for browsing directories."
+depends         = "$auto"
+section         = "utils"
+priority        = "optional"
+assets          = [
+  ["target/release/image-view", "usr/bin/image-view", "755"],
+  ["README.md",                 "usr/share/doc/image-view/README.md", "644"],
+]
