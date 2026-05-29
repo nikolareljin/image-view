@@ -42,8 +42,8 @@ A GitHub Personal Access Token (PAT) with write access to the tap repository.
 The workflow runs when you push a tag matching these patterns:
 - `v*.*.*` (e.g., v0.5.0, v1.0.0)
 - `*.*.*` (e.g., 0.5.0, 1.0.0)
-- `v*.*.*-rc` or `*.*.*-rc` (release candidates)
-- `v*.*.*-RC` or `*.*.*-RC` (release candidates)
+- `v*.*.*-rc*` or `*.*.*-rc*` (release candidates, e.g., `0.6.3-rc1`, `v0.6.3-rc2`)
+- `v*.*.*-RC*` or `*.*.*-RC*` (release candidates)
 
 ## Creating a Release
 
