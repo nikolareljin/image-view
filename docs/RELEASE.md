@@ -43,4 +43,3 @@ The tap repo is `nikolareljin/homebrew-tap`. The `release-tarballs.yml` workflow
 Required repository secrets in `image-view`:
 
 - `HOMEBREW_TAP_GITHUB_TOKEN`: classic PAT with `repo` scope and write access to the tap repo.
-- `HOMEBREW_TAP_REPO`: `nikolareljin/homebrew-tap`.
