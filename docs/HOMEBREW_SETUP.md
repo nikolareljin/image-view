@@ -36,18 +36,6 @@ A GitHub Personal Access Token (PAT) with write access to the tap repository.
 4. Value: Paste the token
 5. Click "Add secret"
 
-### 2. HOMEBREW_TAP_REPO
-
-The repository name for your Homebrew tap.
-
-**Value:** `nikolareljin/homebrew-tap`
-
-**Add to repository:**
-1. Go to image-view repository → Settings → Secrets and variables → Actions
-2. Click "New repository secret"
-3. Name: `HOMEBREW_TAP_REPO`
-4. Value: `nikolareljin/homebrew-tap`
-5. Click "Add secret"
 
 ## Workflow Triggers
 
@@ -79,7 +67,7 @@ After configuring the secrets, you can verify the setup by:
 
 1. **Check secrets are configured:**
    - Go to repository Settings → Secrets and variables → Actions
-   - Verify both `HOMEBREW_TAP_GITHUB_TOKEN` and `HOMEBREW_TAP_REPO` exist
+   - Verify `HOMEBREW_TAP_GITHUB_TOKEN` exists
 
 2. **Test with a release:**
    - Create and push a test tag (e.g., `v0.5.1-test`)

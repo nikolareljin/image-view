@@ -17,7 +17,7 @@ on:
       - "v[0-9]*.[0-9]*.[0-9]*-RC*"
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.event.inputs.release_tag || github.ref }}
   cancel-in-progress: false
 
 permissions:
@@ -32,6 +32,6 @@ jobs:
       desc: "Render images directly in your terminal"
       homepage: "https://github.com/nikolareljin/image-view"
       tap_repo: "nikolareljin/homebrew-tap"
-      release_tag: ${{ inputs.release_tag }}
+      release_tag: ${{ github.event.inputs.release_tag }}
     secrets:
       tap_token: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
