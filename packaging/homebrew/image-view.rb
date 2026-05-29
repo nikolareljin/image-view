@@ -11,7 +11,7 @@ class ImageView < Formula
   version "PLACEHOLDER_VERSION_UPDATED_BY_CI"
   license "MIT"
 
-  # CI generates a binary formula (no build dependency). Structure:
+  # CI replaces the url/sha256/version above with per-platform blocks:
   #   on_macos do
   #     if Hardware::CPU.arm?
   #       url "...macos-arm64.tar.gz"; sha256 "..."
@@ -22,5 +22,12 @@ class ImageView < Formula
   #   on_linux do
   #     url "...linux-x86_64.tar.gz"; sha256 "..."
   #   end
-  #   def install; bin.install "image-view"; end
+
+  def install
+    bin.install "image-view"
+  end
+
+  test do
+    assert_match "image-view", shell_output("#{bin}/image-view --help")
+  end
 end
