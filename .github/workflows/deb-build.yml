@@ -31,4 +31,4 @@ jobs:
       build_command: "cargo deb"
       artifact_glob: "target/debian/*.deb"
       upload_to_release: "auto"
-      release_tag: ${{ inputs.release_tag }}
+      release_tag: ${{ github.event.inputs.release_tag || github.ref_name }}
