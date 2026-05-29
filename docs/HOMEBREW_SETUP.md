@@ -88,7 +88,7 @@ The enhanced workflow includes:
 ## Troubleshooting
 
 ### Workflow fails with "Missing required secrets"
-- Ensure both secrets are configured in the image-view repository
+- Ensure `HOMEBREW_TAP_GITHUB_TOKEN` is configured in the image-view repository
 - Check that the token hasn't expired
 
 ### Workflow fails during push

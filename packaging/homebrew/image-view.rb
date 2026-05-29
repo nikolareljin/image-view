@@ -6,9 +6,9 @@
 class ImageView < Formula
   desc "Render images directly in your terminal"
   homepage "https://github.com/nikolareljin/image-view"
-  url "https://github.com/nikolareljin/image-view/archive/refs/tags/0.6.2.tar.gz"
+  url "PLACEHOLDER_URL_UPDATED_BY_CI"
   sha256 "PLACEHOLDER_SHA256_UPDATED_BY_CI"
-  version "0.6.2"
+  version "PLACEHOLDER_VERSION_UPDATED_BY_CI"
   license "MIT"
 
   depends_on "rust" => :build

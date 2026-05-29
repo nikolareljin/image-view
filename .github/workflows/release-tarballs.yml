@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       release_tag:
-        description: "Tag to build tarballs for (e.g. 0.6.2). Leave empty to use the pushed tag."
+        description: "Tag to build tarballs for (e.g. 0.6.2). Required for manual runs; leave empty only when triggered automatically by a tag push."
         required: false
         default: ""
   push:
