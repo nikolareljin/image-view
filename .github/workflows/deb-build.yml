@@ -1,0 +1,34 @@
+name: Deb Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Tag to attach the .deb to (e.g. 0.6.2). Leave empty to use the pushed tag."
+        required: false
+        default: ""
+  push:
+    tags:
+      - "[0-9]*.[0-9]*.[0-9]*"
+      - "[0-9]*.[0-9]*.[0-9]*-rc*"
+      - "[0-9]*.[0-9]*.[0-9]*-RC*"
+      - "v[0-9]*.[0-9]*.[0-9]*"
+      - "v[0-9]*.[0-9]*.[0-9]*-rc*"
+      - "v[0-9]*.[0-9]*.[0-9]*-RC*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  deb:
+    uses: nikolareljin/ci-helpers/.github/workflows/deb-build.yml@production
+    with:
+      prebuild_command: "cargo install cargo-deb --locked"
+      build_command: "cargo deb"
+      artifact_glob: "target/debian/*.deb"
+      upload_to_release: "auto"
+      release_tag: ${{ github.event.inputs.release_tag || github.ref_name }}
