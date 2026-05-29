@@ -70,7 +70,7 @@ After configuring the secrets, you can verify the setup by:
    - Verify `HOMEBREW_TAP_GITHUB_TOKEN` exists
 
 2. **Test with a release:**
-   - Create and push a test tag (e.g., `v0.5.1-test`)
+   - Create and push a test tag matching the workflow patterns (e.g., `0.6.3-rc1` or `v0.6.3-rc1`)
    - Watch the workflow run in the Actions tab
    - Check the workflow logs for the "Validate secrets" step
 
