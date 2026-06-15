@@ -7,7 +7,10 @@ on:
 permissions:
   contents: write
   pull-requests: read
+  actions: write
 
 jobs:
   tag:
     uses: nikolareljin/ci-helpers/.github/workflows/auto-tag-release.yml@production
+    with:
+      release_workflow: release.yml
