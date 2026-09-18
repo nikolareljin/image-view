@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file.
 This format is based on Keep a Changelog and follows Semantic Versioning.
 
 ## [Unreleased]
+
+### Fixed
+- **Tagging a release would have finished on a red run.** `auto-tag-release.yml`
+  left `update_production_tag` at its default `true`, which advances a floating
+  `production` ref via `./scripts/create_production.sh`. This repository has
+  neither the script nor the tag, so the step would have failed *after* the
+  version tag was already pushed. Set to `false`.
 ### Changed
 - `scripts/script-helpers` advanced from 0.11.0 to **0.30.0**. Nothing in the library was renamed or removed across those 23 releases, and the functions this repo calls through it (`parse_common_args`, `show_help`, `shlib_import`) are unchanged.
 - The `.gitmodules` url gained its missing `.git` suffix, matching the fleet convention.

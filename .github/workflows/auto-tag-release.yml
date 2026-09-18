@@ -9,5 +9,14 @@ permissions:
   pull-requests: read
 
 jobs:
+  # update_production_tag defaults to true, which runs ./scripts/create_production.sh
+  # to advance a floating `production` ref after tagging. This repository has
+  # neither that script nor a `production` tag, so the step would fail *after* the
+  # version tag had already been pushed, leaving a red run standing behind a
+  # correct tag. Nothing here has exercised it yet: the only release/* merge since
+  # this workflow was added ended in startup_failure, and every run since has been
+  # a non-release merge that skipped tagging entirely.
   tag:
     uses: nikolareljin/ci-helpers/.github/workflows/auto-tag.yml@production
+    with:
+      update_production_tag: false
