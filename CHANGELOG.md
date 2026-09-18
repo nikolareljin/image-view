@@ -3,6 +3,11 @@
 All notable changes to this project are documented in this file.
 This format is based on Keep a Changelog and follows Semantic Versioning.
 
+## [Unreleased]
+### Changed
+- `scripts/script-helpers` advanced from 0.11.0 to **0.30.0**. Nothing in the library was renamed or removed across those 23 releases, and the functions this repo calls through it (`parse_common_args`, `show_help`, `shlib_import`) are unchanged.
+- The `.gitmodules` url gained its missing `.git` suffix, matching the fleet convention.
+
 ## [0.6.2] - 2026-05-27
 ### Fixed
 - Remove `image-data` default feature from `arboard` to drop the transitive `moxcms` dependency. This fixes `cargo install` failures on Rust < 1.85 caused by `moxcms v0.8.1` requiring edition 2024.
