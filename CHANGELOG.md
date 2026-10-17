@@ -5,6 +5,12 @@ This format is based on Keep a Changelog and follows Semantic Versioning.
 
 ## [Unreleased]
 
+### Changed
+- **The Homebrew formula is published with a deploy key.** The release
+  passes `HOMEBREW_TAP_DEPLOY_KEY` and `HOMEBREW_TAP_REPO` (both secrets) to
+  ci-helpers 0.40.0; the token push was refused by the tap's protected `main`
+  (403).
+
 ### Fixed
 - **Tagging a release would have finished on a red run.** `auto-tag-release.yml`
   left `update_production_tag` at its default `true`, which advances a floating

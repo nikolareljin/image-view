@@ -30,7 +30,7 @@ jobs:
       formula_class: "ImageView"
       desc: "Render images directly in your terminal"
       homepage: "https://github.com/nikolareljin/image-view"
-      tap_repo: "nikolareljin/homebrew-tap"
       release_tag: ${{ github.event.inputs.release_tag || github.ref_name }}
     secrets:
-      tap_token: ${{ secrets.HOMEBREW_TAP_GITHUB_TOKEN }}
+      tap_repo: ${{ secrets.HOMEBREW_TAP_REPO }}
+      tap_deploy_key: ${{ secrets.HOMEBREW_TAP_DEPLOY_KEY }}
